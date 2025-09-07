@@ -145,16 +145,15 @@ let contentSource = {};
 		source = result.product.description ? {
 			html: `<head>
         <link rel="preconnect" href="https://fonts.gstatic.com">
-        <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <style>
             body {
                 color: #b1b1b1;
-                font-size: 16px;
+                font-size: 12px;
             }
             p, h1, h2, h3, h4, h5, h6, ul, li, a, strong, italic {
                 color: #b1b1b1;
-                font-size: 14px;
+                font-size: 12px;
             }
             li {
                 box-sizing: unset !important;
@@ -285,36 +284,6 @@ let contentSource = {};
 				slug={result?.product?.slug}
 			/>
 		})
-		/*const token = await AsyncStorage.getItem('sme_user_token');
-		try {
-			const response = await axios({
-				method: 'post',
-				url: `${apiConfig.BASE_URL}/member/order/calcPrice`,
-				params: {
-					orderItems: [Item],
-				},
-				headers: { Authorization: `Bearer ${token}` }
-			});
-
-			if (response.status === 201) {
-				console.log(response.data);
-				props.navigation.navigate('Modal', {
-					content: <BuyNowScreen
-						navigation={props.navigation}
-						backScreen={'ProductDetail'}
-						productId
-					/>
-				})
-			}
-		} catch (error) {
-			console.log(error);
-			showMessage({
-				message: error.response?.data?.message || 'Có lỗi xảy ra',
-				type: 'danger',
-				icon: 'danger',
-				duration: 3000,
-			});
-		}*/
 	}
 
 	function handleShare() {
@@ -429,14 +398,14 @@ let contentSource = {};
 									<Text style={tw`text-red-600 font-bold text-lg`}>{formatVND(salePrice)}</Text>
 								)}
 							</View>
-							<View>
-							<Text>
-								{result && result.product && result.product.stockStatus === 'OUT_OF_STOCK' ? '⚠️ Hết hàng' :
-								 result && result.product && result.product.stockStatus === 'LOW_STOCK' ? '⚠️ Sắp hết hàng' : '✅ Còn hàng'}
-							</Text>
-							{instock > 0 && (
-								<Text style={tw`text-gray-500 text-xs`}>Còn {displayNumber(instock)} {result && result.product && result.product.unitName}</Text>
-							)}
+							<View style={tw`flex flex-col items-end`}>
+								<Text>
+									{result && result.product && result.product.stockStatus === 'OUT_OF_STOCK' ? '⚠️ Hết hàng' :
+									 result && result.product && result.product.stockStatus === 'LOW_STOCK' ? '⚠️ Sắp hết hàng' : 'Còn hàng'}
+								</Text>
+								{instock > 0 && (
+									<Text style={tw`text-gray-500 text-xs`}>Còn {displayNumber(instock)} {result && result.product && result.product.unitName}</Text>
+								)}
 							</View>
 						</View>
 
@@ -455,9 +424,9 @@ let contentSource = {};
 				{/* Categories & SKU (similar to web) */}
 				<View style={tw`bg-white mb-3 p-3`}>
 					{result && result.product && result.product.categories && result.product.categories.length > 0 && (
-						<View style={tw`mb-2`}>
-							<Text style={tw`text-gray-500`}>Danh mục:</Text>
-							<View style={tw`flex flex-row flex-wrap mt-1`}>
+						<View style={tw`mb-2 flex items-center flex-row`}>
+							<Text style={tw`text-gray-500 mr-1`}>Danh mục:</Text>
+							<View style={tw`flex flex-row flex-wrap`}>
 								{result.product.categories.map((item) => (
 									<Text key={item.id} style={tw`mr-2 text-blue-700`}>{item.name}</Text>
 								))}

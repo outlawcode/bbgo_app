@@ -2,36 +2,22 @@
  * React Native App
  * Everything starts from the Entry-point
  */
-import React, { useEffect } from "react";
-import {ActivityIndicator, LogBox, Platform, PushNotificationIOS, Text, TextInput} from "react-native";
-import { Provider, useDispatch, useSelector } from "react-redux";
-import { PersistGate } from 'redux-persist/es/integration/react';
-import { Provider as PaperProvider } from 'react-native-paper';
+import React, {useEffect} from "react";
+import {ActivityIndicator, LogBox, Platform, Text, TextInput} from "react-native";
+import {Provider, useDispatch, useSelector} from "react-redux";
+import {PersistGate} from 'redux-persist/es/integration/react';
+import {Provider as PaperProvider} from 'react-native-paper';
 
-import {
-  PaperThemeDefault,
-  PaperThemeDark,
-  CombinedDefaultTheme,
-  CombinedDarkTheme,
-} from 'app/config/theme-config';
+import {CombinedDarkTheme, CombinedDefaultTheme, PaperThemeDark, PaperThemeDefault,} from 'app/config/theme-config';
 import Navigator from 'app/navigation/index';
 import configureStore from 'app/store';
-import {GetProductCategories, GetSettings, SetMap} from "app/store/actions/settingActions";
+import {GetProductCategories, GetSettings} from "app/store/actions/settingActions";
 import FlashMessage from "react-native-flash-message";
-import { appUpgradeVersionCheck } from "app-upgrade-react-native-sdk";
-import { AppConfig } from "app/config/api-config";
-import firebase from '@react-native-firebase/app';
-import messaging from '@react-native-firebase/messaging';
-
-import { NavigationContainer, useNavigation } from '@react-navigation/native';
-
-
-import Geolocation from "@react-native-community/geolocation";
-import PushNotification from "react-native-push-notification";
+import {appUpgradeVersionCheck} from "app-upgrade-react-native-sdk";
+import {AppConfig} from "app/config/api-config";
 import {GetFCMToken, NotificationListener, requestUserPermission} from "app/utils/pushnotifycation";
 import {WalletConnectModal} from "@walletconnect/modal-react-native";
 import tw from "twrnc";
-import FloatingHotlineButton from 'app/components/FloatingHotlineButton';
 
 // Use main project ID (make sure this is correct and active)
 const projectId = 'b5adb2e19ab2dd031b96956954f8cc6c';
@@ -180,14 +166,6 @@ const RootNavigation = (props) => {
   }, [dispatch, settings, currentUser])
 
   useEffect(() => {
-    Geolocation.getCurrentPosition(info => {
-      if (info) {
-        dispatch(SetMap({
-          lat: info.coords.latitude,
-          lng: info.coords.longitude
-        }))
-      }
-    });
     dispatch(GetSettings());
     dispatch(GetProductCategories());
   }, [])

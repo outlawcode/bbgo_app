@@ -139,8 +139,6 @@
 	<string>Using for avatar upload and QR Scanning</string>
 	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
 	<dict/>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Using for place an food order.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Using for QR Scanning function</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

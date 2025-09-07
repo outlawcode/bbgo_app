@@ -56,19 +56,12 @@ export const NotificationListener = () => {
         );
         if (remoteMessage.data) {
             if (remoteMessage.data.type === 'product' && remoteMessage.data.slug) {
-                console.log('Opening product with slug:', remoteMessage.data.slug, 'shopId:', remoteMessage.data.shopId);
-                if (remoteMessage.data.shopId) {
-                    Linking.openURL(`bbgo://app/product/${remoteMessage.data.slug}?shopId=${remoteMessage.data.shopId}`)
-                } else {
-                    Linking.openURL(`bbgo://app/product/${remoteMessage.data.slug}`)
-                }
+                Linking.openURL(`bbgo://app/product/${remoteMessage.data.slug}`)
             }
             if (remoteMessage.data.type === 'info' && remoteMessage.data.slug) {
-                console.log('Opening post with slug:', remoteMessage.data.slug);
                 Linking.openURL(`bbgo://app/post/${remoteMessage.data.slug}`)
             }
             if (remoteMessage.data.type === 'order' && remoteMessage.data.slug) {
-                console.log('Opening order with slug:', remoteMessage.data.slug);
                 Linking.openURL(`bbgo://app/order/${remoteMessage.data.slug}`)
             }
             if (remoteMessage.data.type === 'transaction' && remoteMessage.data.slug) {
@@ -92,12 +85,7 @@ export const NotificationListener = () => {
 
                 if (remoteMessage.data) {
                     if (remoteMessage.data.type === 'product' && remoteMessage.data.slug) {
-                        console.log('Opening product with slug:', remoteMessage.data.slug, 'shopId:', remoteMessage.data.shopId);
-                        if (remoteMessage.data.shopId) {
-                            Linking.openURL(`bbgo://app/product/${remoteMessage.data.slug}?shopId=${remoteMessage.data.shopId}`)
-                        } else {
-                            Linking.openURL(`bbgo://app/product/${remoteMessage.data.slug}`)
-                        }
+                        Linking.openURL(`bbgo://app/product/${remoteMessage.data.slug}`)
                     }
                     if (remoteMessage.data.type === 'info' && remoteMessage.data.slug) {
                         console.log('Opening post with slug:', remoteMessage.data.slug);
@@ -123,12 +111,7 @@ export const NotificationListener = () => {
 
         if (remoteMessage.data) {
             if (remoteMessage.data.type === 'product' && remoteMessage.data.slug) {
-                console.log('Opening product with slug:', remoteMessage.data.slug, 'shopId:', remoteMessage.data.shopId);
-                if (remoteMessage.data.shopId) {
-                    Linking.openURL(`bbgo://app/product/${remoteMessage.data.slug}?shopId=${remoteMessage.data.shopId}`)
-                } else {
-                    Linking.openURL(`bbgo://app/product/${remoteMessage.data.slug}`)
-                }
+                Linking.openURL(`bbgo://app/product/${remoteMessage.data.slug}`)
             }
             if (remoteMessage.data.type === 'info' && remoteMessage.data.slug) {
                 console.log('Opening post with slug:', remoteMessage.data.slug);

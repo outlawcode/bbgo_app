@@ -151,7 +151,7 @@ function HomeProducts(props) {
 					catSlug: category?.detail?.slug,
 				})}
 			>
-				<Text style={tw`mr-1 text-cyan-600 font-medium`}>Vào cửa hàng</Text>
+				<Text style={tw`mr-1 text-cyan-600 font-medium`}>{catId === 'ALL' ? 'Vào cửa hàng' : 'Xem thêm'}</Text>
 				<Icon name="chevron-right" size={16} style={tw`text-cyan-600`} />
 			</TouchableOpacity>
 		</View>

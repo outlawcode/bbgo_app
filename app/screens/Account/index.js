@@ -335,7 +335,7 @@ function AccountScreen(props) {
 				<StatusBar barStyle={"light-content"} backgroundColor={'#008A97'} />
 
 				{/* Header - Compact White Background */}
-				<View style={tw`bg-white px-4 py-4 border-b border-gray-100`}>
+				<View style={tw`bg-white px-4 py-1 border-b border-gray-100`}>
 					<View style={tw`flex flex-row items-center justify-between`}>
 						{/* Left: Avatar + Name + ID */}
 						<View style={tw`flex flex-row items-center flex-1`}>
@@ -364,7 +364,32 @@ function AccountScreen(props) {
 								<Text style={tw`text-cyan-600 text-sm`}>
 									ID: {currentUser && currentUser.refId ? currentUser.refId : 'Chưa có'}
 								</Text>
+								<View style={tw`flex items-center flex-row`}>
+									{Number(currentUser.status2FA) === 1 ?
+										<View style={tw`bg-green-500 flex flex-row items-center rounded-full px-1 mr-1`}>
+											<Icon name={"shield-check"} style={tw`text-white mr-1`}/>
+											<Text style={tw`text-white text-xs`}>Đã cài 2FA</Text>
+										</View>
+										:
+										<View style={tw`bg-gray-300 flex flex-row items-center rounded-full px-1 mr-1`}>
+											<Icon name={"shield-check"} style={tw`text-gray-500 mr-1`}/>
+											<Text style={tw`text-gray-500 text-xs`}>Chưa cài 2FA</Text>
+										</View>
+									}
+									{Number(currentUser.kycStatus) === 1 ?
+										<View style={tw`bg-blue-500 flex flex-row items-center rounded-full px-1`}>
+											<Icon name={"account-check"} style={tw`text-white mr-1`}/>
+											<Text style={tw`text-white text-xs`}>Đã KYC</Text>
+										</View>
+										:
+										<View style={tw`bg-gray-200 flex flex-row items-center rounded-full px-1`}>
+											<Icon name={"account-check"} style={tw`text-gray-400 mr-1`}/>
+											<Text style={tw`text-gray-400 text-xs`}>Chưa KYC</Text>
+										</View>
+									}
+								</View>
 							</View>
+
 						</View>
 
 						{/* Right: Position + Detail Button */}

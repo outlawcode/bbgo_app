@@ -143,8 +143,8 @@ android {
         applicationId "com.bbherb.bbgo"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 22
-        versionName "2.0.2"
+        versionCode 1
+        versionName "1.0.0"
         multiDexEnabled true
         missingDimensionStrategy 'react-native-camera', 'general'
     }

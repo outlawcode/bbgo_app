@@ -112,8 +112,7 @@ function TwoFAScreen({ navigation }) {
           type: 'success',
           icon: 'success'
         });
-        dispatch(LoadDataAction());
-        navigation.goBack();
+        navigation.navigate('Account');
       }
     } catch (error) {
       console.log('Verify 2FA error:', error);
@@ -222,15 +221,9 @@ function TwoFAScreen({ navigation }) {
                   </Text>
                 </View>
                 <View style={tw`flex flex-row items-start mb-2`}>
-                  <Text style={tw`text-cyan-600 font-bold mr-2`}>2.</Text>
-                  <Text style={tw`text-gray-700 flex-1`}>
-                    Mở ứng dụng và chọn "Quét mã QR"
-                  </Text>
-                </View>
-                <View style={tw`flex flex-row items-start mb-2`}>
                   <Text style={tw`text-cyan-600 font-bold mr-2`}>3.</Text>
                   <Text style={tw`text-gray-700 flex-1`}>
-                    Quét mã QR ở trên hoặc nhập mã bí mật thủ công
+                    Nhập mã bí mật thủ công
                   </Text>
                 </View>
                 <View style={tw`flex flex-row items-start mb-2`}>

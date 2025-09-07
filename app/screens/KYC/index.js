@@ -252,7 +252,7 @@ function KYCScreen({ navigation }) {
     console.log('handleSubmit called with values:', values);
     console.log('idFront:', idFront);
     console.log('idBack:', idBack);
-    
+
     if (!idFront || !idBack) {
       showMessage({
         message: 'Vui lòng upload đầy đủ ảnh mặt trước và mặt sau CCCD',
@@ -326,8 +326,7 @@ function KYCScreen({ navigation }) {
           type: 'success',
           icon: 'success'
         });
-        dispatch(LoadDataAction());
-        navigation.goBack();
+        navigation.navigate('Account');
       }
     } catch (error) {
       console.log('Verify email error:', error);
