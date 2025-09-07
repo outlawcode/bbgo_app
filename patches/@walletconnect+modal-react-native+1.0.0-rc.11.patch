@@ -1,0 +1,10 @@
+diff --git a/node_modules/@walletconnect/modal-react-native/src/components/ModalHeader.tsx b/node_modules/@walletconnect/modal-react-native/src/components/ModalHeader.tsx
+index 841e6a4..3d69cd1 100644
+--- a/node_modules/@walletconnect/modal-react-native/src/components/ModalHeader.tsx
++++ b/node_modules/@walletconnect/modal-react-native/src/components/ModalHeader.tsx
+@@ -1,4 +1,4 @@
+-import { useState, type ReactNode, useEffect } from 'react';
++import { useState, ReactNode, useEffect } from 'react';
+ import { Platform, StyleSheet, Text, View } from 'react-native';
+ import { useSnapshot } from 'valtio';
+ 

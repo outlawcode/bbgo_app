@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "427861928994",
+    "project_id": "smemart-dd1a8",
+    "storage_bucket": "smemart-dd1a8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:427861928994:android:7300fcabe5aebd88786e7b",
+        "android_client_info": {
+          "package_name": "com.smemart.mart"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAJfvCKrnmyj5Qas8VmDAFJzk8hftxHIyY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
