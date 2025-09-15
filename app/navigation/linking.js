@@ -23,7 +23,7 @@ const config = {
 }
 
 const linking = {
-    prefixes: ['smemart://app'],
+    prefixes: ['bbherb://app'],
     config
 }
 

@@ -33,37 +33,32 @@ function CustomDrawer(props) {
 		getCategories();
 	},[])
 
+	// Helpers to navigate to nested HomeStack screens through Drawer -> RootStack -> AppTabs -> HomeStack
+	const navigateToHomeStack = (target, params) => {
+		props.navigation.navigate('Home', {
+			screen: 'AppScreen',
+			params: {
+				screen: 'Trang chủ',
+				params: {
+					screen: target,
+					params,
+				},
+			},
+		});
+	};
+
 	const menu = [
 		{
-			name: 'Danh mục',
+			name: 'Danh mục sản phẩm',
 			destination: 'Products',
 			icon: 'view-grid',
-			iconColor: 'text-green-500'
-		},
-		{
-			name: 'Dịch vụ',
-			destination: 'Foods',
-			icon: 'grid',
-			slug: 'service',
-			iconColor: 'text-red-500'
-		},
-		{
-			name: 'Gian hàng',
-			destination: 'Stores',
-			icon: 'store',
-			iconColor: 'text-pink-500'
-		},
-		{
-			name: 'Siêu thị',
-			destination: 'Mart',
-			icon: 'store-24-hour',
-			iconColor: 'text-blue-500'
+			iconColor: 'text-cyan-600'
 		},
 		{
 			name: 'Tin tức',
 			destination: 'Posts',
 			icon: 'newspaper',
-			iconColor: 'text-orange-400',
+			iconColor: 'text-cyan-600',
 		},
 	]
 
@@ -74,12 +69,7 @@ function CustomDrawer(props) {
 					{menu.map((item, index) => (
 						<>
 							<TouchableOpacity
-								onPress={() => props.navigation.navigate(item.destination, {
-									screen: item.destination,
-									params: {
-										slug: item.slug
-									},
-								})}
+								onPress={() => navigateToHomeStack(item.destination)}
 								style={tw`w-full flex flex-row items-center py-3 border-t border-gray-100 ${index === 0 && 'border-t-0'}`}
 							>
 								<Icon name={item.icon} style={tw`mr-2 ${item.iconColor}`} size={20}/>
@@ -89,7 +79,7 @@ function CustomDrawer(props) {
 								categories && categories.map((cat, index) => (
 									<TouchableOpacity
 										activeOpacity={1}
-										onPress={() => props.navigation.navigate('ProductCategory', {catId: cat.id, catSlug: cat.slug})}
+										onPress={() => navigateToHomeStack('ProductCategory', {catId: cat.id, catSlug: cat.slug})}
 										style={tw`ml-5 mb-4`}
 									>
 										<View style={tw`flex flex-row items-center`}>
@@ -103,7 +93,7 @@ function CustomDrawer(props) {
 								postCategories && postCategories.map((cat, index) => (
 									<TouchableOpacity
 										activeOpacity={1}
-										onPress={() => props.navigation.navigate('PostCategory', {catId: cat.id, catSlug: cat.slug})}
+										onPress={() => navigateToHomeStack('PostCategory', {catId: cat.id, catSlug: cat.slug})}
 										style={tw`ml-5 mb-4`}
 									>
 										<View style={tw`flex flex-row items-center`}>

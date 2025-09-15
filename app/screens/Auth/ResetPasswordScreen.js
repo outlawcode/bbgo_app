@@ -136,7 +136,7 @@ const ResetPasswordScreen = ({ navigation, route }) => {
 				<View style={styles.headerContainer}>
 					<View style={styles.logoContainer}>
 						<Image
-							source={{ uri: settings && settings.app_logo }}
+							source={{ uri: settings && settings.website_logo }}
 							style={tw`h-20 w-20`}
 							resizeMode="contain"
 						/>
@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#f7f9fc",
 	},
 	focusedInput: {
-		borderColor: "#2ea65d",
+		borderColor: "#008A97",
 		borderWidth: 2,
 		backgroundColor: "#fff",
 	},
@@ -301,7 +301,7 @@ const styles = StyleSheet.create({
 		marginLeft: 4,
 	},
 	submitButton: {
-		backgroundColor: "#2ea65d",
+		backgroundColor: "#008A97",
 		borderRadius: 10,
 		height: 56,
 		justifyContent: "center",
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 12,
 	},
 	actionLinkText: {
-		color: "#2ea65d",
+		color: "#008A97",
 		fontWeight: "600",
 		fontSize: 14,
 	},

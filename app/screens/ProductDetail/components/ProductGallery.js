@@ -1,6 +1,5 @@
 import React, {useRef} from 'react';
 import { Dimensions, Image, Platform, StyleSheet, TouchableOpacity, View } from "react-native";
-import Carousel, {ParallaxImage} from 'react-native-snap-carousel';
 import tw from 'twrnc';
 import ApiConfig from "app/config/api-config";
 import Swiper from 'react-native-swiper'
@@ -31,7 +30,7 @@ function ProductGallery(props) {
 				activeDot={
 					<View
 						style={{
-							backgroundColor: '#2ea65d',
+							backgroundColor: '#008A97',
 							width: 8,
 							height: 8,
 							borderRadius: 4,

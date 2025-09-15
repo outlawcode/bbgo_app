@@ -1,9 +1,14 @@
 module.exports = {
   presets: [
     [
-      'module:metro-react-native-babel-preset',
-      {useTransformReactJSXExperimental: true},
+      '@react-native/babel-preset',
+      {
+        enableBabelRuntime: false,
+        unstable_transformProfile: 'hermes-stable',
+        flow: 'strip',
+      },
     ],
+    '@babel/preset-typescript',
   ],
   env: {
     production: {
@@ -22,12 +27,6 @@ module.exports = {
       },
     ],
     'jest-hoist',
-    'react-native-reanimated/plugin',
-    [
-      '@babel/plugin-transform-react-jsx',
-      {
-        runtime: 'automatic',
-      },
-    ],
-  ],
+    'react-native-reanimated/plugin'
+  ]
 };

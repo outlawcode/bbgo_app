@@ -1,14 +1,19 @@
 import React from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
-import OrderList from "app/screens/Orders/OrderList";
+import {Image, Text, TouchableOpacity, View} from "react-native";
 import tw from "twrnc";
-import { formatDateTime, formatVND } from "app/utils/helper";
+import {formatDateTime, formatVND} from "app/utils/helper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { PaymentMethod } from "app/models/commons/order.model";
 
 function OrderItem(props) {
 	const order = props.item
-	const items = JSON.parse(order.priceDetails);
+	let parsed;
+	try {
+		parsed = order && order.priceDetails ? JSON.parse(order.priceDetails) : [];
+	} catch (e) {
+		parsed = [];
+	}
+	// Normalize to an array list of line items
+	const lineItems = Array.isArray(parsed) ? parsed : (parsed && parsed.priceDetail ? parsed.priceDetail : []);
 
 	return (
 		<TouchableOpacity
@@ -21,61 +26,32 @@ function OrderItem(props) {
 				</Text>
 				<Text>{order.status}</Text>
 			</View>
-			{order.type === 'Dịch vụ' ?
-				<View>
-					<View style={tw`mb-2`}>
-						<View style={tw`my-2 p-2 bg-blue-100 border border-blue-300 rounded`}>
-							<Text style={tw`text-green-600 text-base font-medium`}>
-								<Icon name={"shield-check"} size={18} style={tw`mr-2 text-yellow-500`} /> {items.restaurant && items.restaurant.name}</Text>
+
+			{lineItems && lineItems.slice(0,1).map((el, index) => (
+				<View key={index} style={tw`flex flex-row mb-2`}>
+					{el?.product?.featureImage ? (
+						<Image source={{ uri: el.product.featureImage }} style={tw`w-12 h-12 object-cover mr-3 rounded`} />
+					) : null}
+					<View>
+						<View>
+							<Text style={tw`font-medium`}>{el?.product?.name || el?.name || 'Sản phẩm'}</Text>
+						</View>
+						{el?.name ? (
 							<View>
-								<Text style={tw`text-xs text-gray-500`} numberOfLines={1}>{items.restaurant && items.restaurant.address}</Text>
+								<Text style={tw`text-xs text-gray-500`}>Phân loại hàng: {el.name}</Text>
 							</View>
+						) : null}
+						<View>
+							<Text style={tw`text-xs text-gray-500`}>x{el?.quantity || 1}</Text>
 						</View>
 					</View>
-					{items && items.priceDetail.slice(0,1).map((el, index) => (
-						<View style={tw`flex flex-row mb-2`}>
-							<Image source={{ uri: el.serviceImage }} style={tw`w-12 h-12 object-cover mr-3 rounded`} />
-							<View>
-								<View>
-									<Text style={tw`font-medium`}>{el.serviceName}</Text>
-								</View>
-								<View>
-									<Text style={tw`text-xs text-gray-500`}>x{el.quantity}</Text>
-								</View>
-							</View>
-						</View>
-					))}
-					{items && items.priceDetail.length > 1 &&
-						<View style={tw`py-2 border-b border-t border-gray-100 mb-2`}>
-							<Text style={tw`text-center text-gray-500`}>{items.priceDetail.length} sản phẩm</Text>
-						</View>
-					}
 				</View>
-				:
-				<>
-					{items && items.priceDetail.slice(0,1).map((el, index) => (
-						<View style={tw`flex flex-row mb-2`}>
-							<Image source={{ uri: el.product.featureImage }} style={tw`w-12 h-12 object-cover mr-3 rounded`} />
-							<View>
-								<View>
-									<Text style={tw`font-medium`}>{el.product.name}</Text>
-								</View>
-								<View>
-									<Text style={tw`text-xs text-gray-500`}>Phân loại hàng: {el.name}</Text>
-								</View>
-								<View>
-									<Text style={tw`text-xs text-gray-500`}>x{el.quantity}</Text>
-								</View>
-							</View>
-						</View>
-					))}
-					{items && items.priceDetail.length > 1 &&
-						<View style={tw`py-2 border-b border-t border-gray-100 mb-2`}>
-							<Text style={tw`text-center text-gray-500`}>{items.priceDetail.length} sản phẩm</Text>
-						</View>
-					}
-				</>
-			}
+			))}
+			{lineItems && lineItems.length > 1 && (
+				<View style={tw`py-2 border-b border-t border-gray-100 mb-2`}>
+					<Text style={tw`text-center text-gray-500`}>{lineItems.length} sản phẩm</Text>
+				</View>
+			)}
 
 			<View style={tw`mb-2`}>
 				<Text>
@@ -84,7 +60,7 @@ function OrderItem(props) {
 			</View>
 			<View style={tw`mb-2 justify-between pb-2 border-b border-gray-100`}>
 				<Text>
-					Phương thức thanh toán: <Text style={tw`font-medium text-gray-500`}>{PaymentMethod.map(el => el.code === order.paymentMethod && el.name)}</Text>
+					Phương thức thanh toán: <Text style={tw`font-medium text-gray-500`}>{order.paymentMethod}</Text>
 				</Text>
 			</View>
 			<View style={tw`flex flex-row items-center justify-between`}>

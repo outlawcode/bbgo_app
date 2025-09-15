@@ -26,10 +26,9 @@ function ProductCategoryScreen(props) {
 			setLoading(true)
 			const dataRequests = [
 				apiClient.get(`/product-category/${catId}`),
-				apiClient.get('/shop-product', {
+				apiClient.get('/product', {
 					params: {
 						category: [catId],
-						shopId: Number(settings && settings.admin_shop_id),
 						limit: 100000000
 					}
 				}),
@@ -53,7 +52,7 @@ function ProductCategoryScreen(props) {
 		props.navigation.setOptions({
 			title: null,
 			headerStyle: {
-				backgroundColor: '#2ea65d',
+				backgroundColor: '#008A97',
 			},
 			headerTintColor: '#fff',
 			headerLeft: () => (
@@ -87,7 +86,7 @@ function ProductCategoryScreen(props) {
 	return (
 		loading ? <CategoryPageLoading /> :
 		<View style={tw`flex bg-gray-100 min-h-full`}>
-			<StatusBar barStyle={"light-content"} backgroundColor={'#2ea65d'} />
+			<StatusBar barStyle={"light-content"} backgroundColor={'#008A97'} />
 			{category && category.subCategory && category.subCategory.length > 0 &&
 				<ChildCategoryHorizontalList
 					category={category && category.subCategory}
@@ -122,7 +121,7 @@ function ProductCategoryScreen(props) {
 							>
 								<View style={tw`flex items-center flex-row`}>
 									<Icon name={"arrow-left"} style={tw`mr-1 text-green-600`} size={18} />
-									<Text  style={tw`text-green-600 font-bold`}>{category.detail.parent.name}</Text>
+									<Text  style={tw`text-cyan-600 font-bold`}>{category.detail.parent.name}</Text>
 								</View>
 
 							</TouchableOpacity>
@@ -130,13 +129,13 @@ function ProductCategoryScreen(props) {
 					}
 					<View style={tw`bg-white py-3`}>
 						<View style={tw`ml-3 flex items-center flex-row`}>
-							<Text  style={tw`font-bold uppercase text-green-600`}>{category && category.detail && category.detail.name}</Text>
+							<Text  style={tw`font-bold uppercase text-cyan-600`}>{category && category.detail && category.detail.name}</Text>
 						</View>
 
-						{products && products.product && products.product.list && products.product.list.length > 0 ?
+						{products && products.list && products.list.length > 0 ?
 							<FlatGrid
 								itemDimension={150}
-								data={products && products.product && products.product.list}
+								data={products && products.list}
 								additionalRowStyle={tw`flex items-start`}
 								spacing={10}
 								renderItem={({ item, index }) => (

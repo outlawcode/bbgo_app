@@ -1,16 +1,13 @@
-import React, { useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import React, {useState} from "react";
+import {Text, TouchableOpacity, View} from "react-native";
 import tw from "twrnc";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { formatVND, displayNumber } from "app/utils/helper.js";
-import { useSelector } from "react-redux";
-import AsyncStorage from "@react-native-community/async-storage";
+import {displayNumber, formatVND} from "app/utils/helper.js";
+import {useSelector} from "react-redux";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import apiConfig from "app/config/api-config";
-import { emptyCart } from "app/screens/Cart/action.js";
-import { GetMe } from "app/screens/Auth/action.js";
-import CheckoutCompleted from "app/screens/CheckOut/CheckoutCompleted.js";
-import { showMessage } from "react-native-flash-message";
+import {showMessage} from "react-native-flash-message";
 
 function PaymentScreen(props) {
   const {navigation, orderId, backScreen, amount, receiver, onRefresh} = props;

@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "427861928994",
-    "project_id": "smemart-dd1a8",
-    "storage_bucket": "smemart-dd1a8.firebasestorage.app"
+    "project_number": "837655896323",
+    "project_id": "bbherb-98b6d",
+    "storage_bucket": "bbherb-98b6d.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:427861928994:android:7300fcabe5aebd88786e7b",
+        "mobilesdk_app_id": "1:837655896323:android:22961c335cb1ef68ab4936",
         "android_client_info": {
-          "package_name": "com.smemart.mart"
+          "package_name": "com.brs.bbherb"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAJfvCKrnmyj5Qas8VmDAFJzk8hftxHIyY"
+          "current_key": "AIzaSyDuKF3u9mGCYpXMmZdbPdsaceeReQowpW4"
         }
       ],
       "services": {

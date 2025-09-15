@@ -1,4 +1,4 @@
-import AsyncStorage from "@react-native-community/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiClient } from "app/services/client";
 import apiConfig from "app/config/api-config";
 import {all, call, put, takeLatest} from 'redux-saga/effects';

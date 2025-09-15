@@ -113,7 +113,7 @@ const RegisterScreen = ({ navigation, route }) => {
 						// Chuyển về trang đăng nhập với thông tin đã điền
 						console.log("Navigating to Login with:", {
 							values: {
-								email: values.email,
+								email: values.phone,
 								password: values.password
 							}
 						});
@@ -185,7 +185,7 @@ const RegisterScreen = ({ navigation, route }) => {
 					<View style={styles.logoContainer}>
 						{/* Use the app logo from settings */}
 						<Image
-							source={{ uri: settings && settings.app_logo }}
+							source={{ uri: settings && settings.website_logo }}
 							style={tw`h-20 w-20`}
 							resizeMode="contain"
 						/>
@@ -200,9 +200,12 @@ const RegisterScreen = ({ navigation, route }) => {
 				<Formik
 					initialValues={{
 						name: "",
-						email: "",
 						phone: "",
+						email: "",
+						personalID: "",
+						address: "",
 						password: "",
+						retypePassword: "",
 						refId: "",
 					}}
 					validationSchema={RegisterSchema}
@@ -221,16 +224,6 @@ const RegisterScreen = ({ navigation, route }) => {
 
 							<Field
 								component={ModernInput}
-								name="email"
-								label="Địa chỉ Email"
-								keyboardType="email-address"
-								autoCapitalize="none"
-								required
-								placeholder="Nhập địa chỉ email"
-							/>
-
-							<Field
-								component={ModernInput}
 								name="phone"
 								label="Số điện thoại"
 								number
@@ -240,12 +233,45 @@ const RegisterScreen = ({ navigation, route }) => {
 
 							<Field
 								component={ModernInput}
+								name="email"
+								label="Địa chỉ Email"
+								keyboardType="email-address"
+								autoCapitalize="none"
+								placeholder="Nhập địa chỉ email"
+							/>
+
+							<Field
+								component={ModernInput}
+								name="personalID"
+								label="Số CCCD"
+								placeholder="Nhập số CCCD"
+							/>
+
+							{/*<Field
+								component={ModernInput}
+								name="address"
+								label="Địa chỉ"
+								placeholder="Địa chỉ nhận hàng"
+							/>*/}
+
+							<Field
+								component={ModernInput}
 								name="password"
 								label="Mật khẩu"
 								secureTextEntry
 								autoCapitalize="none"
 								required
 								placeholder="Nhập mật khẩu"
+							/>
+
+							<Field
+								component={ModernInput}
+								name="retypePassword"
+								label="Nhập lại Mật khẩu"
+								secureTextEntry
+								autoCapitalize="none"
+								required
+								placeholder="Nhập lại mật khẩu"
 							/>
 
 							<Field
@@ -360,7 +386,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#f7f9fc",
 	},
 	focusedInput: {
-		borderColor: "#2ea65d",
+		borderColor: "#008A97",
 		borderWidth: 2,
 		backgroundColor: "#fff",
 	},
@@ -408,7 +434,7 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 	},
 	loginLink: {
-		color: "#2ea65d",
+		color: "#008A97",
 		fontWeight: "700",
 		fontSize: 14,
 	},

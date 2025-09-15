@@ -20,15 +20,14 @@ function SearchProductScreen(props) {
 		setLoading(true);
 		if (settings && typeof query !== 'undefined') {
 			const timer = setTimeout(() => {
-				apiClient.get('/shop-product', {
+				apiClient.get('/product', {
 					params: {
 						query,
-						shopId: Number(settings && settings.admin_shop_id)
 					}
 				}).then(function(response) {
 					if(response.status === 200) {
 						setProducts({
-							list: response.data.product.list,
+							list: response.data.list,
 							count: response.data.count
 						})
 						setLoading(false);
@@ -46,12 +45,12 @@ function SearchProductScreen(props) {
 
 	return (
 		<View>
-			<View style={tw`bg-white ios:pt-14 android:pt-4 pb-4 flex-row justify-between items-center`}>
+			<View style={tw`bg-white ios:pt-14 android:pt-14 pb-4 flex-row justify-between items-center`}>
 				<TouchableOpacity
 					onPress={() => props.navigation.goBack()}
 					style={tw`mr-3 ml-3`}
 				>
-					<Icon name="close" size={26}/>
+					<Icon name="chevron-left" size={28}/>
 				</TouchableOpacity>
 				<View style={tw`flex-row items-center bg-gray-200 rounded w-4/5 mr-3 h-8`}>
 					<Icon name="magnify" size={18} style={tw`text-gray-500 ml-2`} />

@@ -137,12 +137,11 @@ const LoginScreen = ({ navigation, route }) => {
 				<View style={styles.headerContainer}>
 					<View style={styles.logoContainer}>
 						<Image
-							source={{uri: settings && settings.app_logo}}
+							source={{uri: settings && settings.website_logo}}
 							style={tw`h-20 w-20`}
 							resizeMode="contain"
 						/>
 					</View>
-					<Text style={styles.welcomeText}>Chào mừng trở lại!</Text>
 					<Text style={styles.subtitleText}>
 						Đăng nhập để tiếp tục sử dụng ứng dụng
 					</Text>
@@ -297,7 +296,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#f7f9fc",
 	},
 	focusedInput: {
-		borderColor: "#2ea65d",
+		borderColor: "#008A97",
 		borderWidth: 2,
 		backgroundColor: "#fff",
 	},
@@ -315,21 +314,21 @@ const styles = StyleSheet.create({
 		marginBottom: 24,
 	},
 	forgotPasswordText: {
-		color: "#2ea65d",
+		color: "#008A97",
 		fontWeight: "600",
 	},
 	loginButton: {
-		backgroundColor: "#2ea65d",
+		backgroundColor: "#008A97",
 		borderRadius: 10,
 		height: 56,
 		justifyContent: "center",
 		alignItems: "center",
 	},
 	disabledButton: {
-		backgroundColor: "#a5d8b9",
+		backgroundColor: "#00c5db",
 	},
 	errorButton: {
-		backgroundColor: "#2ea65d", // Giữ màu giống với nút đăng nhập bình thường
+		backgroundColor: "#008A97", // Giữ màu giống với nút đăng nhập bình thường
 	},
 	loadingContainer: {
 		flexDirection: 'row',
@@ -369,7 +368,7 @@ const styles = StyleSheet.create({
 		fontSize: 14,
 	},
 	registerLink: {
-		color: "#2ea65d",
+		color: "#008A97",
 		fontWeight: "700",
 		fontSize: 14,
 	},

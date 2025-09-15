@@ -1,80 +1,97 @@
-# 🚀 React Native Boilerplate - March 2022
+This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
 
-[![React Native](https://img.shields.io/badge/React%20Native-v0.67.3-green.svg)](https://facebook.github.io/react-native/)
-[![React Navigation V5](https://img.shields.io/badge/React%20Navigation-v5.9-blue.svg)](https://reactnavigation.org/)
+# Getting Started
 
-React Native Boilerplate is a starting point for React Native application. This project is configured with redux, redux saga
-and redux persist. Uses latest version of react-navigation (v6.0)
+> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
 
-<p float="left">
-<a href='http://redux.js.org'><img src='https://camo.githubusercontent.com/f28b5bc7822f1b7bb28a96d8d09e7d79169248fc/687474703a2f2f692e696d6775722e636f6d2f4a65567164514d2e706e67' height='60' alt='Redux Logo' aria-label='redux.js.org' /></a>
- 
-<a href='https://redux-saga.js.org/'><img src='https://redux-saga.js.org/img/Redux-Saga-Logo-Landscape.png' height='60' alt='Redux Logo' aria-label='redux-saga.js.org/' /></a>
+## Step 1: Start Metro
 
-<a href='https://callstack.github.io/react-native-paper/'><img src='https://raw.githubusercontent.com/callstack/react-native-paper/master/docs/assets/images/paper-logo.svg?sanitize=true' height='110' alt='Redux Logo' aria-label='https://callstack.github.io/react-native-paper/' /></a>
+First, you will need to run **Metro**, the JavaScript build tool for React Native.
 
-</p>
+To start the Metro dev server, run the following command from the root of your React Native project:
 
-# UPDATE
-If you want something simple, un opinionated and scalable with no boilerplate: 
-[React-Native-Query-Zusatnd-BoilerPlate](https://github.com/victorkvarghese/react-native-boilerplate-query-zustand)
+```sh
+# Using npm
+npm start
 
+# OR using Yarn
+yarn start
+```
 
-## Scalability Factor
+## Step 2: Build and run your app
 
-This Type based Architecture scales smoothly for small - medium apps. If you guys are building a very large application I would suggest using the following feature based architecture which will be more developer friendly with ease of scaling.
+With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
 
-[React-Native-Feature-BoilerPlate](https://github.com/victorkvarghese/react-native-feature-boilerplate)
+### Android
 
-## Projects using this BoilerPlate
+```sh
+# Using npm
+npm run android
 
-- [MediBuddy](https://github.com/victorkvarghese/MediBuddy)
-- [react-native-messenger](https://github.com/victorkvarghese/react-native-messenger)
-- [rn-coffee](https://github.com/victorkvarghese/rn-coffee)
+# OR using Yarn
+yarn android
+```
 
-## Features
-- [Typescript](https://www.typescriptlang.org/) support.
-- [React Hooks](https://reactjs.org/docs/hooks-intro.html)
-- [React Navigation](https://reactnavigation.org/) with [Authentication flow](https://reactnavigation.org/docs/auth-flow) baked in & theming support.
-- [React Native Gesture Handler](https://github.com/kmagiera/react-native-gesture-handler)
-- [React Native Paper](https://callstack.github.io/react-native-paper/)- with theming support 
-- [React Native Vector Icons](https://github.com/oblador/react-native-vector-icons)
-- [Redux](http://redux.js.org/) with [hooks](https://react-redux.js.org/api/hooks) support
-- [Redux Saga](https://redux-saga.js.org/)
-- [Redux Persist](https://github.com/rt2zz/redux-persist/)
-- [Jest](https://facebook.github.io/jest/)
-- [Eslint](http://eslint.org/) ([Airbnb config](https://github.com/airbnb/javascript/tree/master/packages/eslint-config-airbnb))
+### iOS
 
+For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
 
-## How this looks
-  <img height="720" src="https://user-images.githubusercontent.com/15869386/84810277-c051fb00-b028-11ea-9351-cbb586ae4fc2.gif" />
-  
-## Prerequisites
+The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
 
-- [Node](https://nodejs.org) v10 (it is recommended to install it via [NVM](https://github.com/creationix/nvm))
-- [Yarn](https://yarnpkg.com/)
-- A development machine set up for React Native by following [these instructions](https://facebook.github.io/react-native/docs/getting-started.html)
+```sh
+bundle install
+```
 
-## Getting Started
+Then, and every time you update your native dependencies, run:
 
-1. Clone this repo, `git clone https://github.com/victorkvarghese/react-native-boilerplate.git <your project name>`
-2. Go to project's root directory, `cd <your project name>`
-3. Remove `.git` folder, `rm -rf .git`
-4. Use [React Native Rename](https://github.com/junedomingo/react-native-rename) to update project name `$ npx react-native-rename <newName>`
-5. Run `yarn` to install dependencies
+```sh
+bundle exec pod install
+```
 
-6. Start the packager with `yarn start`
-7. Connect a mobile device to your development machine
-8. Run the test application:
+For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
 
-- On Android:
-  - Run `react-native run-android` or Use Android Studio (Recommended)
-- On iOS:
-  - Open `ios/YourReactProject.xcworkspace` in Xcode
-  - Hit `Run` after selecting the desired device
+```sh
+# Using npm
+npm run ios
 
-9. Enjoy!!!
+# OR using Yarn
+yarn ios
+```
 
-## Contributing
+If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
 
-PRs are welcome
+This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+
+## Step 3: Modify your app
+
+Now that you have successfully run the app, let's make changes!
+
+Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
+
+When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
+
+- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
+- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
+
+## Congratulations! :tada:
+
+You've successfully run and modified your React Native App. :partying_face:
+
+### Now what?
+
+- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
+- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
+
+# Troubleshooting
+
+If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
+
+# Learn More
+
+To learn more about React Native, take a look at the following resources:
+
+- [React Native Website](https://reactnative.dev) - learn more about React Native.
+- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
+- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
+- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
+- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.

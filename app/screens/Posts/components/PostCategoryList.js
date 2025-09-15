@@ -5,9 +5,9 @@ import ApiConfig from "app/config/api-config";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 
 function PostCategoryList(props) {
-	
+
 	return (
-		<View style={tw`bg-white py-3`}>
+		<View style={tw`bg-white pt-3`}>
 			<ScrollView
 				horizontal
 				showsHorizontalScrollIndicator={false}
@@ -15,7 +15,7 @@ function PostCategoryList(props) {
 				{props.category && props.category.length > 0 && props.category.map((item, index) => (
 					<TouchableOpacity
 						activeOpacity={1}
-						style={tw`flex items-center content-center border-r border-gray-200 px-3`}
+						style={tw`flex items-center content-center px-3`}
 						onPress={() => props.navigation.navigate('PostCategory', {catId: item.id, catSlug: item.slug})}
 					>
 						<View>

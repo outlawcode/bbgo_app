@@ -1,18 +1,19 @@
-import React, { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-community/async-storage";
+import React, {useEffect, useState} from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import apiConfig from "app/config/api-config";
-import { ActivityIndicator, FlatList, RefreshControl, Text, View } from "react-native";
-import TransactionItem from "app/components/TransactionItem";
+import {ActivityIndicator, FlatList, RefreshControl, Text, View} from "react-native";
 import tw from "twrnc";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import OrderItem from "app/screens/Orders/components/OrderItem";
 
 function OrderList(props) {
 	const [loading, setLoading] = useState(false)
-	const [orders, setOrders] = useState({ list: [], count: 0 })
+	const [orders, setOrders] = useState({ list: [], total: 0 })
 	const [notfound, setNotfound] = useState(false)
 	const [refresh, setRefresh] = useState(false)
+	const [page, setPage] = useState(1)
+	const [limit, setLimit] = useState(20)
 
 	useEffect(() => {
 		setLoading(true);
@@ -23,31 +24,33 @@ function OrderList(props) {
 				method: 'get',
 				url: `${apiConfig.BASE_URL}/member/order`,
 				params: {
-					//limit: 10000000,
-					//page: 1,
 					status: props.status,
 					process: props.process,
 					rangeStart: '2022-01-01',
 					rangeEnd: '2050-01-01',
+					page,
 				},
 				headers: {Authorization: `Bearer ${token}`}
 			}).then(function(response) {
 				if(response.status === 200) {
-					if (response.data.length === 0) {
+					const data = response.data || { list: [], total: 0 }
+					if (!data.list || data.list.length === 0) {
 						setNotfound(true)
 					} else {
 						setNotfound(false)
-						setOrders(response.data)
 					}
+					setOrders({ list: data.list || [], total: data.total || 0 })
 					setLoading(false);
 					setRefresh(false);
 				}
 			}).catch((function(error) {
 				console.log(error);
+				setLoading(false);
+				setRefresh(false);
 			}))
 		}
 		getData()
-	}, [props.status, refresh, props.isFocused, props.refresh])
+	}, [props.status, props.process, refresh, props.isFocused, props.refresh, page, limit])
 	return (
 		loading ? <ActivityIndicator /> :
 		<View>
@@ -57,12 +60,15 @@ function OrderList(props) {
 				refreshControl={
 					<RefreshControl
 						refreshing={refresh}
-						onRefresh={() => setRefresh(true)}
+						onRefresh={() => {
+							setPage(1);
+							setRefresh(true);
+						}}
 						title="đang tải"
 						titleColor="#a7a7a7"
 					/>
 				}
-				keyExtractor={(item) => item.id}
+				keyExtractor={(item) => String(item.id)}
 				ListEmptyComponent={() => (
 					<View style={tw`flex items-center my-5`}>
 						<Icon name={"shopping-search"} size={50} style={tw`mb-3 text-gray-300`} />

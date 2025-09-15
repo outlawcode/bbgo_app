@@ -24,12 +24,7 @@ function* FetchSettings(action) {
     }
 }
 async function fetchingProductCategoriesCall() {
-    return apiClient.get('/product-category',
-        {
-            params: {
-                type: 'product'
-            }
-        })
+    return apiClient.get('/product-category',)
 }
 
 function* FetchProductCategories(action) {

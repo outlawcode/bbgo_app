@@ -1,16 +1,7 @@
 import React, {useRef, useState} from "react";
-import {
-  Dimensions,
-  Linking,
-  Platform,
-  StyleSheet,
-  TouchableOpacity,
-  View,
-  Image
-} from "react-native";
-import Carousel, {Pagination} from "react-native-snap-carousel";
+import {Dimensions, Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import Carousel from "react-native-reanimated-carousel";
 import tw from "twrnc";
-import ApiConfig from "app/config/api-config";
 
 const {width: screenWidth} = Dimensions.get("window");
 
@@ -21,24 +12,39 @@ function SlideShow(props) {
   const renderItem = ({item, index}) => {
     return (
       <TouchableOpacity
-        onPress={() =>
-          Linking.canOpenURL(item.url).then(supported => {
-            supported && Linking.openURL(item.url);
-          })
-        }
-        activeOpacity={0.9}
+        activeOpacity={1}
         style={styles.slideContainer}
       >
-        <View style={styles.imageContainer}>
-          <Image
-            source={{uri: item.image}}
-            style={styles.image}
-            resizeMode="contain"
-          />
-        </View>
+        <Image
+          source={{uri: item.image}}
+          style={styles.image}
+          resizeMode="cover"
+        />
       </TouchableOpacity>
     );
   };
+
+  const CustomPagination = ({items, activeSlide}) => (
+    <View style={tw`absolute bottom-2 left-0 right-0 flex-row justify-center`}>
+      {(items || []).map((_, index) => (
+        <View
+          key={index}
+          style={[
+            tw`w-2 h-2 rounded-full mx-1`,
+            activeSlide === index ? tw`bg-white` : tw`bg-white bg-opacity-50`,
+          ]}
+        />
+      ))}
+    </View>
+  );
+
+  if (!props.items || props.items.length === 0) {
+    return (
+      <View style={styles.containerEmpty}>
+        <Text style={{color: '#666', fontSize: 14}}>Không có ảnh slideshow</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -46,39 +52,17 @@ function SlideShow(props) {
         ref={carouselRef}
         data={props.items || []}
         renderItem={renderItem}
-        sliderWidth={screenWidth}
-        itemWidth={screenWidth}
-        sliderHeight={280}
-        autoplay
-        autoplayInterval={3000}
+        width={screenWidth - 32}
+        height={160}
+        autoPlay
+        autoPlayInterval={4000}
         loop
-        onSnapToItem={index => setActiveSlide(index)}
-        removeClippedSubviews={false}
-        contentContainerCustomStyle={styles.carouselContainer}
-        slideStyle={styles.carouselSlide}
-        inactiveSlideScale={1}
-        inactiveSlideOpacity={1}
-        activeSlideAlignment="center"
-        firstItem={0}
-        enableSnap={true}
-        snapOnAndroid={true}
-        callbackOffsetMargin={0}
+        onProgressChange={(_, absoluteProgress) =>
+          setActiveSlide(Math.round(absoluteProgress))
+        }
+        style={styles.carousel}
       />
-
-      {/* Custom pagination dots */}
-      <View
-        style={tw`absolute bottom-2 left-0 right-0 flex-row justify-center`}
-      >
-        <Pagination
-          dotsLength={props.items ? props.items.length : 0}
-          activeDotIndex={activeSlide}
-          containerStyle={tw`py-0`}
-          dotStyle={tw`w-2 h-2 rounded-full bg-white mx-1`}
-          inactiveDotStyle={tw`bg-white bg-opacity-50`}
-          inactiveDotOpacity={0.6}
-          inactiveDotScale={0.8}
-        />
-      </View>
+      <CustomPagination items={props.items} activeSlide={activeSlide} />
     </View>
   );
 }
@@ -86,47 +70,29 @@ function SlideShow(props) {
 const styles = StyleSheet.create({
   container: {
     position: "relative",
-    width: screenWidth,
-    height: 280
+    width: screenWidth - 32, // match parent with mx-4
+    height: 160,
+    alignSelf: 'center',
+    overflow: 'hidden',
+    borderRadius: 8,
   },
-  carouselContainer: {
-    paddingHorizontal: 0,
-    marginHorizontal: 0,
-    paddingVertical: 0,
-    marginVertical: 0
-  },
-  carouselSlide: {
-    paddingHorizontal: 0,
-    marginHorizontal: 0,
-    paddingVertical: 0,
-    marginVertical: 0,
-    paddingLeft: 0,
-    paddingRight: 0,
-    marginLeft: 0,
-    marginRight: 0
+  containerEmpty: {
+    width: screenWidth - 32,
+    height: 160,
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
   },
   slideContainer: {
-    width: screenWidth,
-    height: 280,
-    paddingHorizontal: 0,
-    paddingVertical: 0,
-    marginHorizontal: 0,
-    marginVertical: 0,
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  imageContainer: {
-    width: screenWidth,
-    height: 280,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 0,
-    overflow: "hidden",
-    justifyContent: "center",
-    alignItems: "center"
+    width: screenWidth - 32,
+    height: 160,
   },
   image: {
-    width: "100%",
-    height: "100%"
+    width: '100%',
+    height: '100%',
+  },
+  carousel: {
+    alignSelf: 'center',
   }
 });
 

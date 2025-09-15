@@ -71,17 +71,17 @@ function News(props) {
 	const renderSectionHeader = useMemo(() => (
 		<View style={tw`px-4 flex-row items-center justify-between mb-4`}>
 			<View style={tw`flex-row items-center`}>
-				<View style={tw`bg-orange-50 p-2 rounded-full mr-2`}>
-					<Icon name="newspaper-variant" size={20} style={tw`text-orange-600`} />
+				<View style={tw`bg-cyan-50 p-2 rounded-full mr-2`}>
+					<Icon name="newspaper-variant" size={20} style={tw`text-cyan-600`} />
 				</View>
-				<Text style={tw`text-gray-800 font-bold text-base uppercase`}>Tin tức & Sự kiện</Text>
+				<Text style={tw`text-gray-7 font-medium`}>Tin tức & Sự kiện</Text>
 			</View>
 			<TouchableOpacity
 				style={tw`flex-row items-center`}
 				onPress={() => props.navigation.navigate("Posts")}
 			>
-				<Text style={tw`mr-1 text-orange-600 font-medium`}>Xem tất cả</Text>
-				<Icon name="chevron-right" size={16} style={tw`text-orange-600`} />
+				<Text style={tw`mr-1 text-cyan-600 font-medium`}>Xem tất cả</Text>
+				<Icon name="chevron-right" size={16} style={tw`text-cyan-600`} />
 			</TouchableOpacity>
 		</View>
 	), [props.navigation]);
@@ -101,7 +101,7 @@ function News(props) {
 					<TouchableOpacity
 						activeOpacity={0.7}
 						onPress={() => setCatId('ALL')}
-						style={tw`mr-2 rounded-full px-4 py-2 ${catId === 'ALL' ? 'bg-orange-600' : 'bg-gray-100'}`}
+						style={tw`mr-2 rounded-md px-4 py-2 ${catId === 'ALL' ? 'bg-cyan-600' : 'bg-gray-100'}`}
 					>
 						<Text style={tw`font-medium ${catId === 'ALL' ? 'text-white' : 'text-gray-700'}`}>Tất cả</Text>
 					</TouchableOpacity>
@@ -109,7 +109,7 @@ function News(props) {
 						<TouchableOpacity
 							key={item.id}
 							activeOpacity={0.7}
-							style={tw`mr-2 rounded-full px-4 py-2 ${catId === item.id ? 'bg-orange-600' : 'bg-gray-100'}`}
+							style={tw`mr-2 rounded-md px-4 py-2 ${catId === item.id ? 'bg-cyan-600' : 'bg-gray-100'}`}
 							onPress={() => setCatId(item.id)}
 						>
 							<Text style={tw`font-medium ${catId === item.id ? 'text-white' : 'text-gray-700'}`}>
@@ -149,16 +149,16 @@ function News(props) {
 			onPress={() => props.navigation.navigate('PostDetail', {slug: item.slug})}
 			style={tw`px-4 mb-4`}
 		>
-			<View style={tw`rounded-xl overflow-hidden shadow-sm`}>
+			<View style={tw`rounded-md overflow-hidden shadow-sm`}>
 				<Image
 					source={{uri: item.featureImage}}
-					style={[tw`w-full h-48 rounded-xl`, {resizeMode: 'cover'}]}
+					style={[tw`w-full h-48 rounded-md`, {resizeMode: 'cover'}]}
 				/>
 				<LinearGradient
-					colors={['transparent', 'rgba(0,0,0,0.7)']}
+					colors={['transparent', 'rgba(0,0,0,0.9)']}
 					style={tw`absolute bottom-0 left-0 right-0 px-3 py-4`}
 				>
-					<Text style={tw`text-white font-bold text-lg`} numberOfLines={2} ellipsizeMode='tail'>
+					<Text style={tw`text-white font-medium`} numberOfLines={2} ellipsizeMode='tail'>
 						{item.title}
 					</Text>
 					<View style={tw`flex-row items-center mt-1`}>
@@ -194,10 +194,10 @@ function News(props) {
 					onPress={() => props.navigation.navigate('Posts')}
 					style={tw`items-center justify-center`}
 				>
-					<View style={tw`bg-orange-50 flex-row items-center justify-center rounded-full h-12 w-12 mb-2`}>
-						<Icon name="arrow-right" size={24} style={tw`text-orange-600`} />
+					<View style={tw`bg-cyan-50 flex-row items-center justify-center rounded-full h-12 w-12 mb-2`}>
+						<Icon name="arrow-right" size={24} style={tw`text-cyan-600`} />
 					</View>
-					<Text style={tw`text-orange-600 text-xs font-medium`}>Xem thêm</Text>
+					<Text style={tw`text-cyan-600 text-xs font-medium`}>Xem thêm</Text>
 				</TouchableOpacity>
 			</View>
 		</ScrollView>
@@ -230,7 +230,9 @@ function News(props) {
 					{postsData.length > 1 && renderNewsList(postsData.slice(1))}
 				</>
 			) : (
-				renderEmptyState
+				<View style={tw`px-4 py-8`}>
+					<Text style={tw`text-center text-gray-500`}>Đang tải tin tức...</Text>
+				</View>
 			)}
 		</View>
 	);

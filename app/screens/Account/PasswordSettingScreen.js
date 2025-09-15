@@ -6,7 +6,7 @@ import CartIcon from "app/screens/Cart/components/cartIcon";
 import { useDispatch, useSelector } from "react-redux";
 import * as ImagePicker from "react-native-image-picker"
 import ActionSheet from 'react-native-actionsheet';
-import AsyncStorage from "@react-native-community/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import * as yup from 'yup';
 import apiConfig from "app/config/api-config";

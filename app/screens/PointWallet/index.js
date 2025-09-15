@@ -1,29 +1,27 @@
-import React, { useEffect, useState } from "react";
-import { FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View } from "react-native";
-import { useDispatch, useSelector } from "react-redux";
+import React, {useEffect, useState} from "react";
+import {FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View} from "react-native";
+import {useDispatch, useSelector} from "react-redux";
 import tw from "twrnc";
-import { formatNumber } from "app/utils/helper";
+import {formatBalance, formatVND} from "app/utils/helper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import moment from "moment";
 import axios from "axios";
 import apiConfig from "app/config/api-config";
-import AsyncStorage from "@react-native-community/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import TransactionItem from "app/components/TransactionItem";
-import { useIsFocused } from "@react-navigation/native";
-import DatePicker from "react-native-neat-date-picker";
-import { LoadDataAction } from "app/screens/Auth/action";
-import PointTransactionItem from "app/components/PointTransactionItem";
-import DepositScreen from "app/screens/RewardWallet/DepositScreen";
+import {useIsFocused} from "@react-navigation/native";
+import {LoadDataAction} from "app/screens/Auth/action";
 import WithdrawBankScreen from "app/screens/RewardWallet/WithdrawBankScreen";
+import DepositPointScreen from "app/screens/PointWallet/DepositPointScreen";
+import ClaimPointScreen from "app/screens/PointWallet/ClaimPointScreen";
 
-function CashWalletScreen(props) {
+function PointWalletScreen(props) {
 	const isFocused = useIsFocused();
 	const dispatch = useDispatch()
 	const currentUser = useSelector(state => state.memberAuth.user);
 	const settings = useSelector(state => state.SettingsReducer.options);
 	const [refresh, setRefresh] = useState(false);
 	const [flag, setFlag] = useState(false);
-	const [showDatePicker, setShowDatePicker] = useState(false);
 	const [transactions, setTransactions] = useState();
 	const [limit, setLimit] = useState(10);
 	const [page, setPage] = useState(1);
@@ -46,7 +44,7 @@ function CashWalletScreen(props) {
 						page,
 						rangeStart: '2022-01-01',
 						rangeEnd: '2050-01-01',
-						wallet: 'Ví điểm thưởng'
+						wallet: 'Ví điểm'
 					},
 					headers: { Authorization: `Bearer ${Token}` }
 				}).then(function(response) {
@@ -62,7 +60,6 @@ function CashWalletScreen(props) {
 			}
 
 			getPackageInfo();
-
 			async function getMe() {
 				const token = await AsyncStorage.getItem('sme_user_token');
 				axios({
@@ -82,10 +79,9 @@ function CashWalletScreen(props) {
 		}
 	}, [dispatch, limit, page, dateRange, flag, refresh, isFocused])
 
-
 	return (
 		<View style={tw`flex bg-white min-h-full content-between`}>
-			<View style={tw`bg-green-600 px-3 pt-12 pb-3`}>
+			<View style={tw`bg-blue-500 px-3 pt-12 pb-3`}>
 				<View style={tw`flex flex-row items-center justify-between`}>
 					<TouchableOpacity
 						onPress={() => props.navigation.goBack()}
@@ -94,11 +90,11 @@ function CashWalletScreen(props) {
 					</TouchableOpacity>
 				</View>
 
-				<View style={tw`bg-green-600 pb-2`}>
+				<View style={tw`bg-blue-500 pb-2`}>
 					<View style={tw`flex items-center`}>
-						<Text  style={tw`text-white mb-3 font-medium text-lg`}>Ví điểm thưởng</Text>
-						<Text  style={tw`text-white text-xs mb-1`}>Số dư ví</Text>
-						<Text  style={tw`text-white font-bold text-4xl`}>{currentUser && formatNumber(currentUser.pointWallet)}</Text>
+						<Text style={tw`text-white mb-3 font-medium text-lg`}>Ví điểm {settings && settings.point_code}</Text>
+						<Text style={tw`text-white text-xs mb-1`}>Số dư ví</Text>
+						<Text style={tw`text-white font-bold text-4xl`}>{currentUser && formatBalance(currentUser.pointWallet)} <Text style={tw`text-xs font-medium`}>{settings && settings.point_code}</Text></Text>
 					</View>
 				</View>
 
@@ -106,17 +102,27 @@ function CashWalletScreen(props) {
 					<TouchableOpacity
 						style={tw`flex flex-row items-center`}
 						onPress={() => props.navigation.navigate('Modal', {
-							content: <DepositScreen
+							content: <DepositPointScreen
 								navigation={props.navigation}
 								backScreen={'PointWallet'}
-								wallet={'Ví điểm thưởng'}
-								currency={'điểm'}
 							/>
 						})}
-						//disabled={currentUser && currentUser.rewardWallet <= 0}
+					>
+						<Icon name={"tray-arrow-down"} size={24} style={tw`text-white mr-1`} />
+						<Text style={tw`text-white`}>Nạp điểm</Text>
+					</TouchableOpacity>
+					<TouchableOpacity
+						style={tw`flex flex-row items-center`}
+						onPress={() => props.navigation.navigate('Modal', {
+							content: <ClaimPointScreen
+								navigation={props.navigation}
+								backScreen={'PointWallet'}
+								balance={currentUser && currentUser.pointWallet}
+							/>
+						})}
 					>
 						<Icon name={"tray-arrow-up"} size={24} style={tw`text-white mr-1`} />
-						<Text style={tw`text-white`}>Nạp điểm</Text>
+						<Text style={tw`text-white`}>Rút điểm</Text>
 					</TouchableOpacity>
 				</View>
 			</View>
@@ -129,24 +135,19 @@ function CashWalletScreen(props) {
 						refreshing={refresh}
 						onRefresh={() => setRefresh(true)}
 						title="đang tải"
-						titleColor="green"
-						tintColor="green"
+						titleColor="red"
+						tintColor="red"
 					/>
 				}
 			>
 				<View style={tw`pb-64`}>
 
 					<View style={tw`px-3`}>
-						<View style={tw`flex flex-row items-center mb-3 pt-5`}>
-							{/*<Icon name={"history"} size={18} style={tw`mr-1 text-green-600`} />*/}
-							<Text  style={tw`font-medium text-gray-500`}>Lịch sử giao dịch ví</Text>
-							{/*<TouchableOpacity
-								style={tw`border border-gray-200 rounded px-3 py-2 flex items-center flex-row`}
-								onPress={() => setShowDatePicker(true)}
-							>
-								<Icon name={"calendar-range-outline"} size={18} style={tw`mr-1`}/>
-								<Text>{formatDate(dateRange[0])} - {formatDate(dateRange[1])}</Text>
-							</TouchableOpacity>*/}
+						<View style={tw`flex flex-row items-center justify-between mb-3 pt-5`}>
+							<View style={tw`flex flex-row items-center`}>
+								{/*<Icon name={"history"} size={18} style={tw`mr-1 text-green-600`} />*/}
+								<Text style={tw`font-medium text-gray-500`}>Lịch sử giao dịch ví</Text>
+							</View>
 						</View>
 						{transactions && transactions.list && transactions.list.length > 0 ?
 							/*<FlatList
@@ -155,7 +156,7 @@ function CashWalletScreen(props) {
 							/>*/
 							<FlatList
 								data={transactions && transactions.list}
-								renderItem={({item}) => <PointTransactionItem item={item} navigation={props.navigation}/>}
+								renderItem={({item}) => <TransactionItem item={item} navigation={props.navigation} settings={settings}/>}
 								/*refreshControl={
 									<RefreshControl
 										refreshing={refresh}
@@ -175,7 +176,7 @@ function CashWalletScreen(props) {
 							:
 							<View style={tw`flex items-center my-5`}>
 								<Icon name={"reload-alert"} size={50} style={tw`mb-3 text-gray-300`} />
-								<Text  style={tw`text-gray-600`}>Không có giao dịch</Text>
+								<Text style={tw`text-gray-600`}>Không có giao dịch</Text>
 							</View>
 						}
 						{/*{transactions && transactions.list && transactions.list.length > 0 ?
@@ -192,14 +193,8 @@ function CashWalletScreen(props) {
 
 				</View>
 			</ScrollView>
-			<DatePicker
-				isVisible={showDatePicker}
-				mode={'range'}
-				onCancel={() => setShowDatePicker(false)}
-				onConfirm={(start, end) => console.log(start, end)}
-			/>
 		</View>
 	);
 }
 
-export default CashWalletScreen;
+export default PointWalletScreen;

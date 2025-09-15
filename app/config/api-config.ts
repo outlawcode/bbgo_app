@@ -1,19 +1,19 @@
 /* App config for apis
  */
 const ApiConfig = {
-  BASE_URL: 'https://api.smemart.net/v1',
-  //BASE_URL: 'http://192.168.1.4:1008/v1',
+  BASE_URL: 'https://api.bbgo.vn/v1',
+  //BASE_URL: 'http://192.168.1.12:2053/v1',
   //LOGIN: 'api/login',
 };
 
 export const RecaptchaConfig = {
   siteKey: '6LdPah0gAAAAAL31xyGx1gxb4TPgGBpZtKTGIyuS',
-  siteUrl: 'https://smemart.net'
+  siteUrl: 'https://bbgo.vn'
 }
 
 export const AppConfig = {
-  androidVersion: '2.0.2',
-  iosVersion: '2.0.2'
+  androidVersion: '1.0.0',
+  iosVersion: '1.0.0'
 }
 
 export default ApiConfig;

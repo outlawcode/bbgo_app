@@ -6,7 +6,7 @@ import CartIcon from "app/screens/Cart/components/cartIcon";
 import { useDispatch, useSelector } from "react-redux";
 import * as ImagePicker from "react-native-image-picker"
 import ActionSheet from 'react-native-actionsheet';
-import AsyncStorage from "@react-native-community/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import * as yup from 'yup';
 import apiConfig from "app/config/api-config";
@@ -22,6 +22,13 @@ function AccountSettingScreen(props) {
 	const currentUser = useSelector(state => state.memberAuth.user);
 	const [photo, setPhoto] = React.useState(null);
 	const [avatar, setAvatar] = React.useState(null);
+	const [idFront, setIdFront] = useState(props.initialValues && props.initialValues.idImageFront ? props.initialValues.idImageFront : null);
+	const [idBack, setIdBack] = useState(props.initialValues && props.initialValues.idImageBack ? props.initialValues.idImageBack : null);
+	const [idFrontPhoto, setIdFrontPhoto] = React.useState(null);
+	const [idBackPhoto, setIdBackPhoto] = React.useState(null);
+	const [uploadingAvatar, setUploadingAvatar] = React.useState(false);
+	const [uploadingIdFront, setUploadingIdFront] = React.useState(false);
+	const [uploadingIdBack, setUploadingIdBack] = React.useState(false);
 
 	const createFormData = (photo, body = {}) => {
 		let data = new FormData();
@@ -40,36 +47,131 @@ function AccountSettingScreen(props) {
 		launchImageLibrary({ noData: true }, (response) => {
 			if (response) {
 				setPhoto(response);
+				setUploadingAvatar(true);
+				// Auto upload after selection
+				handleUploadPhoto(response);
 			}
 		});
 	};
 
-	async function handleUploadPhoto() {
+	const handleChooseIdFront = () => {
+		launchImageLibrary({ noData: true }, (response) => {
+			if (response) {
+				setIdFrontPhoto(response);
+				setUploadingIdFront(true);
+				// Auto upload after selection
+				handleUploadIdFront(response);
+			}
+		});
+	};
+
+	const handleChooseIdBack = () => {
+		launchImageLibrary({ noData: true }, (response) => {
+			if (response) {
+				setIdBackPhoto(response);
+				setUploadingIdBack(true);
+				// Auto upload after selection
+				handleUploadIdBack(response);
+			}
+		});
+	};
+
+	async function handleUploadPhoto(photoToUpload = photo) {
+		if (!photoToUpload) return;
+
 		const Token = await AsyncStorage.getItem('sme_user_token');
 		fetch(`${apiConfig.BASE_URL}/media/member/upload`, {
 			method: 'POST',
-			body: createFormData(photo, { userId: currentUser && currentUser.refId }),
+			body: createFormData(photoToUpload, { userId: currentUser && currentUser.refId }),
 			headers: {Authorization: `Bearer ${Token}`},
 		})
 			.then((response) => response.json())
 			.then((response) => {
 				console.log(response);
 				showMessage({
-					message: "Upload ảnh thành công, nhấn nút Lưu thay đổi",
+					message: "Upload ảnh đại diện thành công!",
 					type: 'success',
 					icon: 'success',
 					duration: 2000,
 				});
 				setAvatar(apiConfig.BASE_URL+response[0].url);
+				setUploadingAvatar(false);
 			})
 			.catch((error) => {
 				console.log('error', error);
 				showMessage({
-					message: error.response.data.message,
+					message: error.response?.data?.message || "Upload ảnh thất bại",
 					type: 'danger',
 					icon: 'danger',
 					duration: 2000,
 				});
+				setUploadingAvatar(false);
+			});
+	}
+
+	async function handleUploadIdFront(photoToUpload = idFrontPhoto) {
+		if (!photoToUpload) return;
+
+		const Token = await AsyncStorage.getItem('sme_user_token');
+		fetch(`${apiConfig.BASE_URL}/media/member/upload`, {
+			method: 'POST',
+			body: createFormData(photoToUpload, { userId: currentUser && currentUser.refId }),
+			headers: {Authorization: `Bearer ${Token}`},
+		})
+			.then((response) => response.json())
+			.then((response) => {
+				console.log(response);
+				showMessage({
+					message: "Upload ảnh mặt trước CCCD thành công!",
+					type: 'success',
+					icon: 'success',
+					duration: 2000,
+				});
+				setIdFront(apiConfig.BASE_URL+response[0].url);
+				setUploadingIdFront(false);
+			})
+			.catch((error) => {
+				console.log('error', error);
+				showMessage({
+					message: error.response?.data?.message || "Upload ảnh thất bại",
+					type: 'danger',
+					icon: 'danger',
+					duration: 2000,
+				});
+				setUploadingIdFront(false);
+			});
+	}
+
+	async function handleUploadIdBack(photoToUpload = idBackPhoto) {
+		if (!photoToUpload) return;
+
+		const Token = await AsyncStorage.getItem('sme_user_token');
+		fetch(`${apiConfig.BASE_URL}/media/member/upload`, {
+			method: 'POST',
+			body: createFormData(photoToUpload, { userId: currentUser && currentUser.refId }),
+			headers: {Authorization: `Bearer ${Token}`},
+		})
+			.then((response) => response.json())
+			.then((response) => {
+				console.log(response);
+				showMessage({
+					message: "Upload ảnh mặt sau CCCD thành công!",
+					type: 'success',
+					icon: 'success',
+					duration: 2000,
+				});
+				setIdBack(apiConfig.BASE_URL+response[0].url);
+				setUploadingIdBack(false);
+			})
+			.catch((error) => {
+				console.log('error', error);
+				showMessage({
+					message: error.response?.data?.message || "Upload ảnh thất bại",
+					type: 'danger',
+					icon: 'danger',
+					duration: 2000,
+				});
+				setUploadingIdBack(false);
 			});
 	}
 
@@ -93,6 +195,18 @@ function AccountSettingScreen(props) {
 		})
 	}, [])
 
+	// Initialize ID images from current user data
+	useEffect(() => {
+		if (currentUser) {
+			if (currentUser.idImageFront) {
+				setIdFront(currentUser.idImageFront);
+			}
+			if (currentUser.idImageBack) {
+				setIdBack(currentUser.idImageBack);
+			}
+		}
+	}, [currentUser])
+
 	const settingValidationSchema = yup.object().shape({
 		name: yup
 			.string()
@@ -112,7 +226,9 @@ function AccountSettingScreen(props) {
 		Keyboard.dismiss();
 		dispatch(updateAccount( {
 			...values,
-			avatar
+			avatar: avatar || currentUser.avatar, // Preserve current avatar if no new one uploaded
+			idImageFront: idFront,
+			idImageBack: idBack
 		}))
 
 	}
@@ -130,7 +246,7 @@ function AccountSettingScreen(props) {
 						phone: currentUser && currentUser.phone,
 						email: currentUser && currentUser.email,
 						address: currentUser && currentUser.address,
-						company: currentUser && currentUser.company,
+						personalID: currentUser && currentUser.personalID,
 					}}
 					onSubmit={values => handleUpdate(values)}
 					validationSchema={settingValidationSchema}
@@ -144,26 +260,88 @@ function AccountSettingScreen(props) {
 							<View style={tw`flex justify-center items-center`}>
 								<TouchableOpacity
 									onPress={handleChoosePhoto}
+									disabled={uploadingAvatar}
 								>
 									<View style={tw`flex justify-center items-center`} >
-										<Icon name="camera-outline" size={30} style={tw`absolute z-50 text-gray-100`} />
-										<View style={tw`bg-black bg-opacity-20 h-20 w-20 absolute z-30 rounded-full`} />
-										<Image source={{uri: currentUser.avatar}} style={tw`w-20 h-20 rounded-full object-cover`} />
+										{uploadingAvatar ? (
+											<View style={tw`w-20 h-20 rounded-full bg-gray-100 flex items-center justify-center`}>
+												<Text style={tw`text-sm text-gray-500`}>Đang upload...</Text>
+											</View>
+										) : (
+											<>
+												<Icon name="camera-outline" size={30} style={tw`absolute z-50 text-gray-100`} />
+												<View style={tw`bg-black bg-opacity-20 h-20 w-20 absolute z-30 rounded-full`} />
+												<Image
+													source={{uri: avatar || currentUser.avatar}}
+													style={tw`w-20 h-20 rounded-full object-cover`}
+												/>
+											</>
+										)}
 									</View>
 								</TouchableOpacity>
 							</View>
-							{photo && (
-								<View style={tw`my-5`}>
-									<Text style={tw`mb-1 font-medium text-gray-600`}>Ảnh đại diện</Text>
-									<View style={tw`flex items-center flex-row`}>
-										<Image
-											source={{ uri: photo.uri }}
-											style={tw`w-14 h-14 object-cover`}
-										/>
-										<Button title="Upload" onPress={handleUploadPhoto} />
-									</View>
-								</View>
-							)}
+
+							{/* ID Card Front Upload */}
+							<View style={tw`my-5`}>
+								<Text style={tw`mb-3 font-medium text-gray-600`}>Ảnh mặt trước CCCD</Text>
+								<TouchableOpacity
+									onPress={handleChooseIdFront}
+									disabled={uploadingIdFront}
+									style={tw`border-2 border-dashed border-gray-300 rounded-lg p-4 items-center`}
+								>
+									{uploadingIdFront ? (
+										<View style={tw`items-center`}>
+											<View style={tw`w-32 h-20 bg-gray-100 rounded flex items-center justify-center`}>
+												<Text style={tw`text-sm text-gray-500`}>Đang upload...</Text>
+											</View>
+										</View>
+									) : idFront ? (
+										<View style={tw`items-center`}>
+											<Image
+												source={{ uri: idFront }}
+												style={tw`w-32 h-20 object-cover rounded`}
+											/>
+											<Text style={tw`text-sm text-gray-500 mt-2`}>Nhấn để thay đổi ảnh</Text>
+										</View>
+									) : (
+										<View style={tw`items-center`}>
+											<Icon name="camera-outline" size={30} style={tw`text-gray-400 mb-2`} />
+											<Text style={tw`text-gray-500`}>Nhấn để chọn ảnh mặt trước CCCD</Text>
+										</View>
+									)}
+								</TouchableOpacity>
+							</View>
+
+							{/* ID Card Back Upload */}
+							<View style={tw`my-5`}>
+								<Text style={tw`mb-3 font-medium text-gray-600`}>Ảnh mặt sau CCCD</Text>
+								<TouchableOpacity
+									onPress={handleChooseIdBack}
+									disabled={uploadingIdBack}
+									style={tw`border-2 border-dashed border-gray-300 rounded-lg p-4 items-center`}
+								>
+									{uploadingIdBack ? (
+										<View style={tw`items-center`}>
+											<View style={tw`w-32 h-20 bg-gray-100 rounded flex items-center justify-center`}>
+												<Text style={tw`text-sm text-gray-500`}>Đang upload...</Text>
+											</View>
+										</View>
+									) : idBack ? (
+										<View style={tw`items-center`}>
+											<Image
+												source={{ uri: idBack }}
+												style={tw`w-32 h-20 object-cover rounded`}
+											/>
+											<Text style={tw`text-sm text-gray-500 mt-2`}>Nhấn để thay đổi ảnh</Text>
+										</View>
+									) : (
+										<View style={tw`items-center`}>
+											<Icon name="camera-outline" size={30} style={tw`text-gray-400 mb-2`} />
+											<Text style={tw`text-gray-500`}>Nhấn để chọn ảnh mặt sau CCCD</Text>
+										</View>
+									)}
+								</TouchableOpacity>
+							</View>
 							<Field
 								component={CustomInput}
 								name="name"
@@ -188,12 +366,12 @@ function AccountSettingScreen(props) {
 							/>
 							<Field
 								component={CustomInput}
-								name="company"
-								label="Công ty"
+								name="personalID"
+								label="Số CCCD"
 							/>
 							<TouchableOpacity
 								onPress={handleSubmit}
-								style={tw`${!isValid ? 'bg-gray-300' : 'bg-green-600'} p-4 rounded`}
+								style={tw`${!isValid ? 'bg-gray-300' : 'bg-cyan-600'} p-4 rounded`}
 								disabled={!isValid}
 							>
 								<Text  style={tw`text-white text-center font-medium uppercase`}>Lưu thay đổi</Text>

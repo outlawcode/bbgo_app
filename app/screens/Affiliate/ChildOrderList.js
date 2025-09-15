@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import AsyncStorage from "@react-native-community/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import apiConfig from "app/config/api-config";
 import { ActivityIndicator, FlatList, RefreshControl, Text, TouchableOpacity, View } from "react-native";
@@ -19,7 +19,7 @@ function ChildOrderListScreen(props) {
 		props.navigation.setOptions({
 			title: 'Đơn hàng Cộng tác viên',
 			headerStyle: {
-				backgroundColor: '#2ea65d',
+				backgroundColor: '#008A97',
 			},
 			headerTintColor: '#fff',
 			headerLeft: () => (

@@ -1,17 +1,14 @@
 import React, {useRef} from "react";
-import {Dimensions, Text, TouchableOpacity, View} from "react-native";
+import {Dimensions, FlatList, Text, TouchableOpacity, View} from "react-native";
 import tw from "twrnc";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import Carousel from "react-native-snap-carousel";
 import ProductItem from "app/components/ProductItem";
-import ProjectItem from "app/components/ProjectItem";
 
 function ProductList(props) {
 	const { width: viewportWidth } = Dimensions.get('window');
-	const SLIDE_WIDTH = Math.round(viewportWidth / (props.type === 'Dự án' ? 1.3 : 2.2));
-	const ITEM_HORIZONTAL_MARGIN = 10;
-	const ITEM_WIDTH = SLIDE_WIDTH + ITEM_HORIZONTAL_MARGIN * 2;
-	const SLIDER_WIDTH = viewportWidth;
+	const ITEM_HORIZONTAL_MARGIN = 8;
+	const SLIDE_WIDTH = Math.round((viewportWidth - ITEM_HORIZONTAL_MARGIN * 6) / 2);
+	const ITEM_WIDTH = SLIDE_WIDTH;
 	const carouselRef = useRef(null);
 
 	return (
@@ -27,30 +24,21 @@ function ProductList(props) {
 			)}
 
 			<View style={tw`mx-2 relative`}>
-				<Carousel
+				<FlatList
 					ref={carouselRef}
-					sliderWidth={SLIDER_WIDTH}
-					itemWidth={ITEM_WIDTH}
-					activeSlideAlignment={'start'}
-					inactiveSlideScale={1}
-					inactiveSlideOpacity={1}
-					data={props.items && props.items.list}
+					data={props.items && props.items}
 					renderItem={({item}) => (
-						<View style={tw`px-2 py-1`}>
-							{props.type === 'Dự án' ?
-								<ProjectItem item={item} navigation={props.navigation} />
-								:
-								<ProductItem item={item} navigation={props.navigation} />
-							}
+						<View style={[tw`px-1 py-1`, {width: ITEM_WIDTH}]}>
+							<ProductItem item={item} navigation={props.navigation} />
 						</View>
 					)}
-					hasParallaxImages={false}
-					autoplay
-					autoplayInterval={4000}
-					loop
-					removeClippedSubviews={true}
-					maxToRenderPerBatch={5}
-					windowSize={10}
+					horizontal
+					showsHorizontalScrollIndicator={false}
+					keyExtractor={(item, index) => index.toString()}
+					contentContainerStyle={tw`px-1`}
+					snapToInterval={ITEM_WIDTH + 8}
+					decelerationRate="fast"
+					snapToAlignment="start"
 				/>
 			</View>
 		</View>

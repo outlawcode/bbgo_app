@@ -3,7 +3,7 @@ import { FlatList, RefreshControl, ScrollView, StatusBar, Text, TextInput, Touch
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 import { apiClient } from "app/services/client";
-import AsyncStorage from "@react-native-community/async-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import apiConfig from "app/config/api-config";
 import OrderItem from "app/screens/Orders/components/OrderItem";
