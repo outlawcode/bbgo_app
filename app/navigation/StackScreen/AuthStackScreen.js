@@ -1,6 +1,8 @@
 import * as React from "react";
-import {createStackNavigator} from "@react-navigation/stack";
+import { createStackNavigator } from "@react-navigation/stack";
+import HomeScreen from "app/screens/Home";
 import AccountScreen from "app/screens/Account";
+import { useSelector } from "react-redux";
 import LoginScreen from "app/screens/Auth/LoginScreen";
 import RegisterScreen from "app/screens/Auth/RegisterScreen";
 import ForgotPasswordScreen from "app/screens/Auth/ForgotPasswordScreen";

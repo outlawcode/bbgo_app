@@ -23,6 +23,7 @@ import Clipboard from '@react-native-community/clipboard';
 import { showMessage } from "react-native-flash-message";
 import BottomSheet from 'react-native-gesture-bottom-sheet';
 import CanceledOrderForm from "app/screens/Orders/components/CanceledOrderForm";
+import CheckoutCompleted from "app/screens/CheckOut/CheckoutCompleted.js";
 import PaymentScreen from "app/screens/Orders/components/PaymentScreen.js";
 
 function OrderDetailScreen(props) {
@@ -48,7 +49,7 @@ function OrderDetailScreen(props) {
 			headerLeft: () => (
 				<TouchableOpacity
 					activeOpacity={1}
-					onPress={() => props.navigation.navigate("Orders")}>
+					onPress={() => props.navigation.goBack()}>
 					<Icon name="chevron-left"
 					      size={26}
 					      style={tw`ml-3`}
@@ -120,29 +121,34 @@ function OrderDetailScreen(props) {
 
 	let priceDetails = [];
 	let receiver = {};
-	let orderItems = [];
-	let totalRewardToken = 0;
 	let paymentInfo = {
-		bankName: settings && settings.bank_name,
-		bankCode: settings && settings.bank_code,
-		bankOwner: settings && settings.bank_owner,
-		bankAccount: settings && settings.bank_account,
+		bankName: settings && settings.pc_bank_name,
+		bankCode: settings && settings.pc_bank_code,
+		bankOwner: settings && settings.pc_bank_owner,
+		bankAccount: settings && settings.pc_bank_account,
+		bankNotePrefix: 'SME',
 	}
 	if (result) {
-		try {
-			priceDetails = result.order && result.order.priceDetails ? JSON.parse(result.order.priceDetails) : []
-		} catch (e) {
-			priceDetails = []
+		priceDetails = JSON.parse(result.order.priceDetails)
+		receiver = JSON.parse(result.order.receiver)
+		console.log(priceDetails);
+		if (priceDetails && priceDetails.restaurant && priceDetails.restaurant.paymentInfo) {
+			paymentInfo = {
+				bankName: JSON.parse(priceDetails.restaurant.paymentInfo).bankName,
+				bankCode: JSON.parse(priceDetails.restaurant.paymentInfo).bankCode,
+				bankOwner: JSON.parse(priceDetails.restaurant.paymentInfo).bankOwner,
+				bankAccount: JSON.parse(priceDetails.restaurant.paymentInfo).bankAccount,
+				bankNotePrefix: `SME-${priceDetails.restaurant.id}`,
+			}
 		}
-		orderItems = Array.isArray(priceDetails) ? priceDetails : (priceDetails && priceDetails.priceDetail ? priceDetails.priceDetail : [])
-		try {
-			receiver = result.order && result.order.receiver ? JSON.parse(result.order.receiver) : {}
-		} catch (e) {
-			receiver = {}
-		}
-		// Calculate total reward token like web
-		if (orderItems && orderItems.length > 0) {
-			totalRewardToken = orderItems.reduce((sum, it) => sum + (Number(it?.rewardToken || 0) * Number(it?.quantity || 0)), 0);
+		if (result && result.shop && result.shop.paymentInfo) {
+			paymentInfo = {
+				bankName: JSON.parse(result.shop.paymentInfo).bankName,
+				bankCode: JSON.parse(result.shop.paymentInfo).bankCode,
+				bankOwner: JSON.parse(result.shop.paymentInfo).bankOwner,
+				bankAccount: JSON.parse(result.shop.paymentInfo).bankAccount,
+				bankNotePrefix: `SME-${result.shop.id}`,
+			}
 		}
 	}
 
@@ -242,7 +248,7 @@ function OrderDetailScreen(props) {
 							</View>
 							<View>
 								<View style={tw`py-2 border-b border-gray-100`}>
-									<Text>Phương thức thanh toán: <Text style={tw`font-medium`}>{result && result.order.paymentMethod}</Text></Text>
+									<Text>Phương thức thanh toán: <Text style={tw`font-medium`}>{PaymentMethod.map(el => el.code === result.order.paymentMethod && el.name)}</Text></Text>
 								</View>
 
 								<View style={tw`py-2 border-b border-gray-100`}>
@@ -250,17 +256,11 @@ function OrderDetailScreen(props) {
 										style={tw`font-medium text-red-600`}>{result && formatVND(result.order.amount)}</Text></Text>
 								</View>
 
-								{result && result.order.paymentMethod === 'Chuyển khoản' && result.order.status === 'Chờ thanh toán' &&
+								{result && result.order.paymentMethod === 'BankTransfer' && result.order.status === 'Chờ xác nhận' &&
 									<View>
 										<Text  style={tw`py-2 mb-2`}>Quý khách vui lòng thanh toán theo thông tin bên dưới:</Text>
 										<View style={tw`mb-5 flex items-center`}>
-											<Image source={{uri: `https://qr.sepay.vn/img?acc=${settings &&
-												settings.bank_account}&bank=${settings &&
-												settings.bank_code}&amount=${
-													result.order.cash
-												}&des=${
-													result.order.paymentNote
-												}`}} style={tw`w-32 h-32`} />
+											<Image source={{uri: `https://img.vietqr.io/image/${paymentInfo.bankCode}-${paymentInfo.bankAccount}-${settings && settings.mk_payment_qr_template}.jpg?amount=${result.amount}&addInfo=${paymentInfo.bankNotePrefix}+${result.order.id}+${receiver.phone}`}} style={tw`w-32 h-32`} />
 										</View>
 										<View style={tw`mb-3 border-b border-gray-100 pb-2`}>
 											<View style={tw`flex flex-row items-center justify-between mb-2`}>
@@ -302,9 +302,9 @@ function OrderDetailScreen(props) {
 											<View style={tw`flex flex-row items-center justify-between mb-2`}>
 												<Text>Nội dung</Text>
 												<View>
-													<Text style={tw`font-medium`}>{result?.order?.paymentNote}</Text>
+													<Text style={tw`font-medium`}>{paymentInfo.bankNotePrefix}-{result.order.id}-{receiver.phone}</Text>
 													<TouchableOpacity
-														onPress={() => copyToClipboard(`${result?.order?.paymentNote}`)}
+														onPress={() => copyToClipboard(`${paymentInfo.bankNotePrefix}-${result.order.id}-${receiver.phone}`)}
 														style={tw`flex flex-row items-center`}
 													>
 														<Icon name="content-copy" style={tw`text-blue-400 mr-1`} />
@@ -325,65 +325,74 @@ function OrderDetailScreen(props) {
 								<Text  style={tw`font-bold text-gray-600`}>Thông tin đơn hàng</Text>
 							</View>
 							<View>
-								<View>
-									{orderItems && orderItems.length > 0 && orderItems.map((item, idx) => (
-										<View key={idx} style={tw`pb-2 mb-2 border-b border-gray-100`}>
-											<Text>
-												{item.product?.name || item.name} {item.product && item.name ? `- ${item.name}` : ''}
-												<Text> x {item.quantity}</Text>
-											</Text>
+								{result && result.order && result.order.type === 'Dịch vụ' ?
+									<View>
+										<View style={tw`mb-2`}>
+											<View style={tw`my-2 p-2 bg-blue-100 border border-blue-300 rounded`}>
+												<Text style={tw`text-green-600 text-base font-medium`}>
+													<Icon name={"shield-check"} size={18} style={tw`mr-2 text-yellow-500`} /> {priceDetails.restaurant && priceDetails.restaurant.name}</Text>
+												<View>
+													<Text style={tw`text-xs text-gray-500`} numberOfLines={1}>{priceDetails.restaurant && priceDetails.restaurant.address}</Text>
+												</View>
+											</View>
 										</View>
-									))}
-								</View>
+										{priceDetails && priceDetails.priceDetail.length > 0 &&
+											priceDetails.priceDetail.map((item) => (
+												<View style={tw`pb-2 mb-2 border-b border-gray-100`}>
+													<Text>
+														{item.serviceName}
+														<Text> (x {item.quantity})</Text>
+													</Text>
+												</View>
+											))
+										}
+									</View>
+									:
+									<View>
+										{priceDetails && priceDetails.priceDetail.length > 0 &&
+											priceDetails.priceDetail.map((item) => (
+												<View style={tw`pb-2 mb-2 border-b border-gray-100`}>
+													<Text>
+														{item.product.name} - {item.name}
+														<Text> (x {item.quantity})</Text>
+													</Text>
+												</View>
+											))
+										}
+									</View>
+								}
 
 								<View style={tw`pb-2 mb-2 border-b border-gray-100 flex flex-row justify-between`}>
 									<Text>Tạm tính</Text>
 									<Text  style={tw`font-medium`}>{formatVND(result && Number(result.order.revenue))}</Text>
 								</View>
 
-								{/* Product discount */}
-								{Number(result && result.order.productDiscount) > 0 && (
+								<View style={tw`pb-2 mb-2 border-b border-gray-100 flex flex-row justify-between`}>
+									<Text>VAT</Text>
+									<Text  style={tw`font-medium text-gray-600`}>{formatVND(result && Number(result.order.VATAmount))}</Text>
+								</View>
+								{/*{Number(result && result.order.nccDiscount) > 0 &&
 									<View style={tw`pb-2 mb-2 border-b border-gray-100 flex flex-row justify-between`}>
-										<Text>Giảm giá sản phẩm</Text>
-										<Text style={tw`text-red-500`}>- {formatVND(result.order.productDiscount)}</Text>
+										<Text>Khuyến mại từ Nhà cung cấp</Text>
+										<Text  style={tw`text-red-500`}>- {formatVND(result && result.order.nccDiscount)}</Text>
 									</View>
-								)}
-
-								{/* Position discount (active discount) */}
-								{Number(result && result.order.positionDiscount) > 0 && result.order.hasActiveDiscount && (
+								}*/}
+								{Number(result && result.order.discount) > 0 &&
 									<View style={tw`pb-2 mb-2 border-b border-gray-100 flex flex-row justify-between`}>
-										<Text>Chiết khấu cấp bậc ({result.order.discountPercent}%)</Text>
-										<Text style={tw`text-red-500`}>- {formatVND(result.order.positionDiscount)}</Text>
+										<Text>E-voucher giảm giá</Text>
+										<Text  style={tw`text-red-500`}>- {formatVND(result && result.order.discount)}</Text>
 									</View>
-								)}
-
-								{/* Shipping fee */}
-								{Number(result && result.order.shippingFee) > 0 && (
+								}
+								{Number(result && result.order.thuongdiem) > 0 &&
 									<View style={tw`pb-2 mb-2 border-b border-gray-100 flex flex-row justify-between`}>
-										<Text>Phí vận chuyển</Text>
-										<Text style={tw`text-blue-600`}>+{formatVND(result.order.shippingFee)}</Text>
+										<Text>Thưởng điểm</Text>
+										<Text  style={tw`text-green-500`}>+{formatNumber(result.order.thuongdiem)}</Text>
 									</View>
-								)}
+								}
 								<View style={tw`flex flex-row justify-between`}>
 									<Text>Tổng tiền</Text>
 									<Text  style={tw`font-bold text-green-600 text-base`}>{formatVND(result && result.order.amount)}</Text>
 								</View>
-
-								{/* Total points if any */}
-								{Number(result && result.order.point) > 0 && (
-									<View style={tw`pt-2 flex flex-row justify-between`}>
-										<Text>Tổng điểm</Text>
-										<Text style={tw`font-bold text-blue-500`}>{formatNumber(result.order.point)}</Text>
-									</View>
-								)}
-
-								{/* Reward token gift */}
-								{totalRewardToken > 0 && (
-									<View style={tw`pt-2 flex flex-row justify-between`}>
-										<Text style={tw`text-cyan-600`}>🎁 Tặng</Text>
-										<Text style={tw`font-bold text-cyan-600`}>+{totalRewardToken} {settings && settings.point_code}</Text>
-									</View>
-								)}
 							</View>
 
 						</View>
@@ -403,7 +412,7 @@ function OrderDetailScreen(props) {
 									<Text  style={tw`text-gray-500`}>Email: <Text style={tw`font-medium text-black`}>{receiver.email}</Text></Text>
 								</View>
 								<View>
-									<Text  style={tw`text-gray-500`}>Địa chỉ: <Text style={tw`font-medium text-black`}>{receiver.address}{receiver.city ? `, ${receiver.city}` : ''}{receiver.wardName ? `, ${receiver.wardName}` : ''}{receiver.districtName ? `, ${receiver.districtName}` : ''}{receiver.provinceName ? `, ${receiver.provinceName}` : ''}</Text></Text>
+									<Text  style={tw`text-gray-500`}>Địa chỉ: <Text style={tw`font-medium text-black`}>{receiver.address}</Text></Text>
 								</View>
 							</View>
 						</View>
@@ -431,7 +440,7 @@ function OrderDetailScreen(props) {
 						}
 					</View>
 				</ScrollView>
-				{result && (result.order.status === 'Chờ xác nhận') &&
+				{result && (result.order.status === 'Chờ thanh toán') &&
 					<View style={tw`absolute bottom-0 android:bottom-14 bg-white w-full py-3 shadow-lg px-3`}>
 						<TouchableOpacity
 							onPress={() => props.navigation.navigate("ModalOverlay", {

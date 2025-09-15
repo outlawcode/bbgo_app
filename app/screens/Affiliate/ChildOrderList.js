@@ -19,7 +19,7 @@ function ChildOrderListScreen(props) {
 		props.navigation.setOptions({
 			title: 'Đơn hàng Cộng tác viên',
 			headerStyle: {
-				backgroundColor: '#008A97',
+				backgroundColor: '#2ea65d',
 			},
 			headerTintColor: '#fff',
 			headerLeft: () => (

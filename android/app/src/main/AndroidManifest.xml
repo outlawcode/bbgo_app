@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.bbherb.bbgo">
+    package="com.brs.bbherb">
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE"/>
@@ -80,7 +81,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:host="app"
-                    android:scheme="bbgo" />
+                    android:scheme="smemart" />
             </intent-filter>
         </activity>
         <meta-data

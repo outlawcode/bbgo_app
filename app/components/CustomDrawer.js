@@ -35,16 +35,35 @@ function CustomDrawer(props) {
 
 	const menu = [
 		{
-			name: 'Danh mục sản phẩm',
+			name: 'Danh mục',
 			destination: 'Products',
 			icon: 'view-grid',
-			iconColor: 'text-cyan-600'
+			iconColor: 'text-green-500'
+		},
+		{
+			name: 'Dịch vụ',
+			destination: 'Foods',
+			icon: 'grid',
+			slug: 'service',
+			iconColor: 'text-red-500'
+		},
+		{
+			name: 'Gian hàng',
+			destination: 'Stores',
+			icon: 'store',
+			iconColor: 'text-pink-500'
+		},
+		{
+			name: 'Siêu thị',
+			destination: 'Mart',
+			icon: 'store-24-hour',
+			iconColor: 'text-blue-500'
 		},
 		{
 			name: 'Tin tức',
 			destination: 'Posts',
 			icon: 'newspaper',
-			iconColor: 'text-cyan-600',
+			iconColor: 'text-orange-400',
 		},
 	]
 

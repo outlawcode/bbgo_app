@@ -135,7 +135,7 @@ const ForgotPasswordScreen = ({ navigation }) => {
 				<View style={styles.headerContainer}>
 					<View style={styles.logoContainer}>
 						<Image
-							source={{ uri: settings && settings.website_logo }}
+							source={{ uri: settings && settings.app_logo }}
 							style={tw`h-20 w-20`}
 							resizeMode="contain"
 						/>
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
 		backgroundColor: "#f7f9fc",
 	},
 	focusedInput: {
-		borderColor: "#008A97",
+		borderColor: "#2ea65d",
 		borderWidth: 2,
 		backgroundColor: "#fff",
 	},
@@ -314,7 +314,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 12,
 	},
 	actionLinkText: {
-		color: "#008A97",
+		color: "#2ea65d",
 		fontWeight: "600",
 		fontSize: 14,
 	},

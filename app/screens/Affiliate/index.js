@@ -1,7 +1,7 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
-	// Image,
+	Image,
 	Platform,
 	RefreshControl,
 	ScrollView,
@@ -12,32 +12,33 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
-// import affiliateImage from '../../assets/images/affiliate.jpg'
-import {useDispatch, useSelector} from "react-redux";
-import {formatDateTime, formatNumber, formatVND} from "app/utils/helper";
+import affiliateImage from '../../assets/images/affiliate.jpg'
+import { useDispatch, useSelector } from "react-redux";
+import { formatNumber, formatVND } from "app/utils/helper";
 import AsyncStorage from "@react-native-community/async-storage";
 import axios from "axios";
+import ApiConfig from "app/config/api-config";
 import apiConfig from "app/config/api-config";
+import { showMessage } from "react-native-flash-message";
+import Clipboard from '@react-native-community/clipboard';
 import TreeView from "react-native-final-tree-view";
 import QRCode from "react-native-qrcode-svg";
 import Logo from '../../assets/images/logo.png'
-import {GetMe} from "app/screens/Auth/action";
+import ActiveCard from "app/screens/ActiveCard";
+import { GetMe } from "app/screens/Auth/action";
 
 function AffiliateProgramScreen(props) {
 	const dispatch = useDispatch();
 	const currentUser = useSelector(state => state.memberAuth.user);
 	const settings = useSelector(state => state.SettingsReducer.options)
 	const [users, setUsers] = useState();
-	const [members, setMembers] = useState();
-	const [loadingMembers, setLoadingMembers] = useState(false);
 	const [refresh, setRefresh] = useState(false);
-	const [activeTab, setActiveTab] = useState('list'); // 'tree' | 'list'
 
 	useEffect(() => {
 		props.navigation.setOptions({
 			title: 'Chương trình Affiliate',
 			headerStyle: {
-				backgroundColor: '#008A97',
+				backgroundColor: '#2ea65d',
 			},
 			headerTintColor: '#fff',
 			headerLeft: () => (
@@ -71,27 +72,10 @@ function AffiliateProgramScreen(props) {
 				setRefresh(false)
 			})
 		}
-		async function getMemberList() {
-			const Token = await AsyncStorage.getItem('sme_user_token');
-			setLoadingMembers(true)
-			axios({
-				method: 'get',
-				url: `${apiConfig.BASE_URL}/user/system`,
-				params: { status: 'ALL' },
-				headers: {Authorization: `Bearer ${Token}`}
-			}).then(function (response) {
-				if (response.status === 200) {
-					setMembers(response.data);
-				}
-				setLoadingMembers(false)
-			}).catch(function(error){
-				console.log(error);
-				setLoadingMembers(false)
-			})
-		}
 		getUsers();
-		getMemberList();
 	}, [refresh])
+
+	console.log(users);
 
 	function handleShare() {
 		let  text = settings && settings.sharing_text ? settings.sharing_text : '';
@@ -105,8 +89,11 @@ function AffiliateProgramScreen(props) {
 			title: 'Chia sẻ liên kết SME Mart',
 			message: text,
 			url: text,
+
 		}, {
+			// Android only:
 			dialogTitle: 'Chia sẻ liên kết SME Mart',
+			// iOS only:
 			excludedActivityTypes: []
 		})
 	}
@@ -120,6 +107,7 @@ function AffiliateProgramScreen(props) {
 			return <Icon name={"plus"} />
 		}
 	}
+
 
 	return (
 		<View style={tw`bg-white h-full`}>
@@ -138,169 +126,131 @@ function AffiliateProgramScreen(props) {
 				}
 			>
 				<View style={tw`flex pb-10 pt-3`}>
-					{/* Intro - compact instead of hero image */}
-					<View style={tw`mx-5 mb-3 bg-white border border-gray-100 p-3 rounded-md`}>
-						<Text style={tw`text-gray-600 text-xs`}>Giới thiệu bạn bè tham gia để nhận thưởng và hoa hồng theo doanh số. Sao chép liên kết hoặc chia sẻ mã QR để bắt đầu.</Text>
-					</View>
-					{currentUser && currentUser.refId &&
+					<Image source={affiliateImage} style={tw`w-full h-50 mb-5`} />
+					{currentUser && currentUser.refId ?
 						<View>
-							{/* Referral code + Share */}
-							<View style={tw`flex items-center justify-between border border-blue-500 flex-row mx-5 px-2 py-1 rounded mb-3`}>
+							<View
+								style={tw`flex items-center justify-between border border-blue-500 flex-row mx-5 px-2 py-1 rounded mb-3`}>
 								<View>
 									<Text style={tw`text-xs`}>Mã giới thiệu</Text>
 									<Text style={tw`font-bold text-2xl`}>{currentUser && currentUser.refId}</Text>
 								</View>
 								<View style={tw`flex flex-row items-center`}>
+									{/*<TouchableOpacity
+								style={tw`bg-orange-500 rounded p-3 mr-2`}
+								onPress={() => {
+									Clipboard.setString(`${currentUser && currentUser.id}`);
+									showMessage({
+										message: 'Đã sao chép mã giới thiệu',
+										type: 'success',
+										icon: 'success',
+										duration: 3000,
+									});
+								}}
+							>
+								<Text  style={tw`text-white`}>Copy</Text>
+							</TouchableOpacity>*/}
 									<TouchableOpacity
 										style={tw`bg-green-600 rounded p-3 flex flex-row items-center`}
 										onPress={() => handleShare()}
 									>
-										<Icon name="share-variant" size={18} style={tw`text-white mr-1`} />
+										<Icon name="share-variant"
+										      size={18}
+										      style={tw`text-white mr-1`}
+										/>
 										<Text style={tw`text-white`}>Chia sẻ</Text>
 									</TouchableOpacity>
 								</View>
 							</View>
-							{/* QR */}
-							<View style={tw`flex items-center mx-auto mb-3`}>
+							<View style={tw`flex items-center mx-auto mb-5`}>
 								<QRCode
 									logoSize={20}
-									size={130}
+									size={150}
 									logo={Logo}
 									value={`${settings && settings.mk_website_url}/register${currentUser && "?ref=" + currentUser.refId}`}
 								/>
-								<Text style={tw`mt-1 text-xs text-gray-600`}>Mã QR của tôi</Text>
+								<Text style={tw`mt-2`}>Mã QR của tôi</Text>
 							</View>
-							{/* Referrer */}
-							{currentUser && currentUser.parent && (
-								<View style={tw`mx-5 mb-3 bg-white border border-gray-100 p-3 rounded-md`}>
-									<View style={tw`flex flex-row items-center`}>
-										<Icon name={"account-arrow-left-outline"} size={18} style={tw`text-purple-600 mr-2`} />
-										<Text style={tw`text-gray-700 text-xs`}>Người giới thiệu: <Text style={tw`font-semibold text-cyan-700`}>{currentUser.parent.refId} - {currentUser.parent.name}</Text></Text>
-									</View>
-								</View>
-							)}
-							{/* Metrics - compact cards */}
-							<View style={tw`mx-5`}> 
-								<View style={tw`flex flex-row`}> 
-									<View style={tw`flex-1 bg-white border border-gray-100 p-3 rounded-md mr-1`}> 
+							<View style={tw`mb-3 mx-3 bg-white border border-gray-200 p-3 rounded-md`}>
+								<View
+									style={tw`flex items-center justify-between flex-row`}
+								>
+									<View style={tw`flex items-center flex-row`}>
+										<Icon name={"account-multiple-plus"} size={32} style={tw`mr-2 text-red-600`} />
 										<View>
-											<View style={tw`flex flex-row items-center`}>
-												<Icon name={"account-multiple-plus"} size={22} style={tw`mr-2 text-red-600`} /> 
-												<Text style={tw`text-gray-700 text-xs`}>Giới thiệu trực tiếp</Text> 
-											</View> 
-											<Text style={tw`font-bold mt-1`}>{users && formatNumber(users.countF1)}</Text> 
+											<Text style={tw`text-gray-500 text-xs -mb-1`}>F1</Text>
+											<Text style={tw`font-medium text-base text-gray-700`}>Giới thiệu trực
+												tiếp</Text>
 										</View>
+
 									</View>
-									<View style={tw`flex-1 bg-white border border-gray-100 p-3 rounded-md ml-1`}> 
-										<View>
-											<View style={tw`flex flex-row items-center`}>
-												<Icon name={"cash"} size={22} style={tw`mr-2 text-red-600`} /> 
-												<Text style={tw`text-gray-700 text-xs`}>Doanh số cá nhân</Text> 
-											</View> 
-											<Text style={tw`font-bold mt-1`}>{users && formatVND(users.personalRevenue)}</Text> 
-										</View>
-									</View>
-								</View>
-								<View style={tw`flex flex-row mt-2`}> 
-									<View style={tw`flex-1 bg-white border border-gray-100 p-3 rounded-md mr-1`}> 
-										<View style={tw`flex flex-col`}> 
-											<View style={tw`flex flex-row items-center`}> 
-												<Icon name={"account-group-outline"} size={22} style={tw`mr-2 text-cyan-600`} /> 
-												<Text style={tw`text-gray-700 text-xs`}>Doanh số nhóm</Text> 
-											</View> 
-											<Text style={tw`font-bold mt-1`}>{users && formatVND(users.groupRevenue)}</Text> 
-										</View>
-									</View>
-									<View style={tw`flex-1 bg-white border border-gray-100 p-3 rounded-md ml-1`}> 
-										<View style={tw`flex flex-col`}> 
-											<View style={tw`flex flex-row items-center`}> 
-												<Icon name={"share-variant-outline"} size={22} style={tw`mr-2 text-green-600`} /> 
-												<Text style={tw`text-gray-700 text-xs`}>Mã giới thiệu</Text> 
-											</View> 
-											<Text style={tw`font-bold mt-1`}>{currentUser ? currentUser.refId : ''}</Text> 
-										</View>
+									<View style={tw`flex items-center flex-row`}>
+										<Text
+											style={tw`font-bold text-lg mr-2`}>{users && formatNumber(users.countF1)}</Text>
 									</View>
 								</View>
 							</View>
+							<View style={tw`mb-3 mx-3 bg-white border border-gray-200 p-3 rounded-md`}>
+								<View
+									style={tw`flex items-center justify-between flex-row`}
+								>
+									<View style={tw`flex items-center flex-row`}>
+										<Icon name={"chart-box-plus-outline"} size={32}
+										      style={tw`mr-2 text-green-600`} />
+										<View>
+											<Text style={tw`text-gray-500 text-xs -mb-1`}>Sales</Text>
+											<Text style={tw`font-medium text-base text-gray-700`}>Doanh thu giới
+												thiệu</Text>
+										</View>
+
+									</View>
+									<View style={tw`flex items-center flex-row`}>
+										<Text
+											style={tw`font-bold text-lg mr-2`}>{currentUser && formatVND(currentUser.sales)}</Text>
+									</View>
+								</View>
+							</View>
+						</View>
+						:
+						<View style={tw`mb-3 mx-3 bg-blue-50 border border-blue-200 flex items-center p-5 rounded`}>
+							<Text style={tw`mb-3 text-center`}>
+								Kích hoạt thẻ để tham gia chương trình Affiliate và hưởng nhiều ưu đãi của thành viên VIP.
+							</Text>
+							<TouchableOpacity
+								style={tw`bg-green-600 px-3 py-2 rounded`}
+								onPress={() => props.navigation.navigate('Modal', {content: <ActiveCard navigation={props.navigation} backScreen={'AffiliateProgram'} />})}
+							>
+								<Text style={tw`text-white font-bold`}>Kích hoạt ngay</Text>
+							</TouchableOpacity>
 						</View>
 					}
-
-					{/* Tabs */}
-					<View style={tw`mx-5 mt-3`}>
-						<View style={tw`bg-gray-100 rounded-full p-1 flex-row w-56`}>
-							<TouchableOpacity onPress={() => setActiveTab('list')} style={tw`flex-1`}>
-								<View style={tw`${activeTab==='list' ? 'bg-white' : ''} rounded-full py-2 items-center`}>
-									<Text style={tw`${activeTab==='list' ? 'text-cyan-600 font-bold' : 'text-gray-600'}`}>Danh sách</Text>
-								</View>
-							</TouchableOpacity>
-							<TouchableOpacity onPress={() => setActiveTab('tree')} style={tw`flex-1`}>
-								<View style={tw`${activeTab==='tree' ? 'bg-white' : ''} rounded-full py-2 items-center`}>
-									<Text style={tw`${activeTab==='tree' ? 'text-cyan-600 font-bold' : 'text-gray-600'}`}>Sơ đồ</Text>
-								</View>
-							</TouchableOpacity>
+					<View style={tw`mx-5`}>
+						<View style={tw`flex flex-row items-center`}>
+							<Icon name={"account-group"} size={24} style={tw`-mt-4 mr-2 text-blue-500`} />
+							<Text style={tw`font-medium text-gray-700 text-base mb-3 text-blue-500`}>Danh sách thành viên</Text>
 						</View>
+
+						{!users ? <ActivityIndicator /> :
+							<TreeView
+								initialExpanded
+								data={users && users.tree}
+								renderNode={({ node, level, isExpanded, hasChildrenNodes }) => {
+									return (
+										<View>
+											<Text
+												style={{
+													marginLeft: 25 * level,
+													marginBottom: 5
+												}}
+											>
+												{getIndicator(isExpanded, hasChildrenNodes)} {node.name} - {node.refId}
+											</Text>
+										</View>
+									)
+								}}
+							/>
+						}
 					</View>
-
-					{/* Content per tab */}
-					{activeTab === 'tree' ? (
-						<View style={tw`mx-5 mt-3`}>
-							{!users ? <ActivityIndicator /> :
-								<TreeView
-									initialExpanded
-									data={users && users.tree}
-									renderNode={({ node, level, isExpanded, hasChildrenNodes }) => {
-										return (
-											<View>
-												<Text
-													style={{
-														marginLeft: 25 * level,
-														marginBottom: 5
-													}}
-												>
-													{getIndicator(isExpanded, hasChildrenNodes)} {node.name} - {node.refId}
-												</Text>
-											</View>
-										)
-									}}
-								/>
-							}
-						</View>
-					) : (
-						<View style={tw`mx-5 mt-3`}>
-							<View style={tw`bg-white border border-gray-200 rounded-md`}> 
-								<View style={{maxHeight: 320}}>
-									<ScrollView showsVerticalScrollIndicator={true}>
-										{loadingMembers ? (
-											<View style={tw`px-3 py-4`}><ActivityIndicator /></View>
-										) : members && members.list && members.list.length > 0 ? (
-											members.list.map((m, idx) => (
-												<View key={m.id || idx} style={tw`px-3 py-3 ${idx !== members.list.length - 1 && 'border-b border-gray-100'}`}>
-													<View style={tw`flex flex-row items-center`}>
-														<View style={tw`w-9 h-9 rounded-full bg-gray-100 items-center justify-center mr-3`}>
-															<Icon name={"account-circle-outline"} size={20} style={tw`text-gray-500`} />
-														</View>
-														<View style={tw`flex-1`}>
-															<Text style={tw`text-gray-900 font-medium`} numberOfLines={1}>{m.name}</Text>
-															<Text style={tw`text-xs text-gray-600`} numberOfLines={1}>{m.phone}  •  ID: {m.id}</Text>
-														</View>
-														<View style={tw`items-end`}>
-															{m.level ? (
-																<Text style={tw`text-xs text-blue-600 font-semibold`} numberOfLines={1}>Level: {m.level}</Text>
-															) : null}
-															<Text style={tw`text-xs text-gray-600`} numberOfLines={1}>{(m.position || '') + (m.congdoanPosition || '')}</Text>
-															<Text style={tw`text-xs text-gray-500`} numberOfLines={1}>{formatDateTime(m.createdAt)}</Text>
-														</View>
-													</View>
-												</View>
-											))
-										) : (
-											<View style={tw`px-3 py-4`}><Text style={tw`text-gray-600`}>Không có dữ liệu</Text></View>
-										)}
-									</ScrollView>
-								</View>
-							</View>
-						</View>
-					)}
 				</View>
 			</ScrollView>
 		</View>

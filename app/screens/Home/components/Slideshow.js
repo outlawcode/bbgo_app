@@ -1,7 +1,16 @@
 import React, {useRef, useState} from "react";
-import {Dimensions, Image, StyleSheet, TouchableOpacity, View} from "react-native";
+import {
+  Dimensions,
+  Linking,
+  Platform,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Image
+} from "react-native";
 import Carousel, {Pagination} from "react-native-snap-carousel";
 import tw from "twrnc";
+import ApiConfig from "app/config/api-config";
 
 const {width: screenWidth} = Dimensions.get("window");
 
@@ -12,12 +21,12 @@ function SlideShow(props) {
   const renderItem = ({item, index}) => {
     return (
       <TouchableOpacity
-        /*onPress={() =>
+        onPress={() =>
           Linking.canOpenURL(item.url).then(supported => {
             supported && Linking.openURL(item.url);
           })
-        }*/
-        activeOpacity={1}
+        }
+        activeOpacity={0.9}
         style={styles.slideContainer}
       >
         <View style={styles.imageContainer}>
@@ -39,9 +48,9 @@ function SlideShow(props) {
         renderItem={renderItem}
         sliderWidth={screenWidth}
         itemWidth={screenWidth}
-        sliderHeight={250}
+        sliderHeight={280}
         autoplay
-        autoplayInterval={4000}
+        autoplayInterval={3000}
         loop
         onSnapToItem={index => setActiveSlide(index)}
         removeClippedSubviews={false}
@@ -78,7 +87,7 @@ const styles = StyleSheet.create({
   container: {
     position: "relative",
     width: screenWidth,
-    height: 150
+    height: 280
   },
   carouselContainer: {
     paddingHorizontal: 0,
@@ -98,7 +107,7 @@ const styles = StyleSheet.create({
   },
   slideContainer: {
     width: screenWidth,
-    height: 150,
+    height: 280,
     paddingHorizontal: 0,
     paddingVertical: 0,
     marginHorizontal: 0,
@@ -108,7 +117,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: screenWidth,
-    height: 250,
+    height: 280,
     backgroundColor: "#f5f5f5",
     borderRadius: 0,
     overflow: "hidden",

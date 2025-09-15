@@ -24,7 +24,7 @@ function ContactScreen(props) {
 		props.navigation.setOptions({
 			title: 'Liên hệ',
 			headerStyle: {
-				backgroundColor: '#008A97',
+				backgroundColor: '#2ea65d',
 			},
 			headerTintColor: '#fff',
 		})

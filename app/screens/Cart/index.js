@@ -1,14 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Alert, Image, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, RefreshControl, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
 import tw from "twrnc";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { emptyCart, removeFromCart, updateCart } from "app/screens/Cart/action";
-import apiConfig from "app/config/api-config";
-import { formatVND, displayNumber, numberToWords } from "app/utils/helper";
+import { apiClient } from "app/services/client";
+import apiConfig, { AppConfig } from "app/config/api-config";
+import { formatVND } from "app/utils/helper";
+import NumericInput from "react-native-numeric-input";
+import { useFocusEffect } from "@react-navigation/native";
 import InputSpinner from "react-native-input-spinner";
 import axios from "axios";
 import AsyncStorage from "@react-native-community/async-storage";
+import {groupBy} from "lodash";
+import ApiConfig from "app/config/api-config";
 import { showMessage } from "react-native-flash-message";
 
 function CartScreen(props) {
@@ -16,106 +21,64 @@ function CartScreen(props) {
 	const cart = useSelector(state => state.CartReducer);
 	const settings = useSelector(state => state.SettingsReducer.options);
 	const currentUser = useSelector(state => state.memberAuth.user);
-	const [result, setResult] = useState(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState(false);
-	const [stockAlert, setStockAlert] = useState(null);
-	const [showDetail, setShowDetail] = useState(false);
-
-	console.log('cartX', cart);
-
-	// Get cart data safely
-	const listPrice = cart ? cart.items : [];
-
-	// Load cart with calcPrice API
-	async function loadCart() {
-		setLoading(true);
-
-		// Get current cart from Redux state
-		const currentListPrice = cart.items || [];
-
-		if (!currentListPrice || currentListPrice.length === 0) {
-			setResult({ prices: [] });
-			setLoading(false);
-			return;
-		}
-
-		console.log(currentListPrice);
-
-		// Calculate price using API
-		const token = await AsyncStorage.getItem('sme_user_token');
-		try {
-			const response = await axios.post(`${apiConfig.BASE_URL}/member/order/calcPrice`, {
-				orderItems: currentListPrice,
-			}, {
-				headers: { Authorization: `Bearer ${token}` }
-			});
-
-			if (response.status === 201) {
-				setResult(response.data);
-
-				// Check stock issues from response
-				if (response.data.stockInfo && response.data.stockInfo.hasStockIssues) {
-					const { outOfStockItems, insufficientStockItems } = response.data.stockInfo;
-					let alertMessage = 'Một số sản phẩm có vấn đề về tồn kho:';
-
-					if (outOfStockItems.length > 0) {
-						alertMessage += ` ${outOfStockItems.length} sản phẩm đã hết hàng.`;
-					}
-
-					if (insufficientStockItems.length > 0) {
-						alertMessage += ` ${insufficientStockItems.length} sản phẩm không đủ số lượng.`;
-					}
-
-					setStockAlert({
-						type: 'error',
-						message: alertMessage,
-						stockInfo: response.data.stockInfo,
-					});
-				}
-
-				setLoading(false);
-			}
-		} catch (err) {
-			console.log(err);
-			setError(true);
-			setLoading(false);
-		}
+	const [prices, setPrices] = useState([])
+	const [refresh, setRefresh] = useState(false)
+	const [flag, setFlag] = useState(false)
+	const [showDetail, setShowDetail] = useState(false)
+	let cartQuantity = 0
+	if (cart) {
+		var listPrice = cart.items;
+		cart.items.map((el) => (
+			cartQuantity += el.quantity
+		))
 	}
 
-	// Load cart when component mounts or cart items change
-	useEffect(() => {
-		if (cart.items && cart.items.length > 0) {
-			loadCart();
-		} else {
-			setResult({ prices: [] });
-			setLoading(false);
-		}
-	}, [cart.items]);
+	async function getPriceCalc(productPrice, quantity, shopId) {
+		const token = await AsyncStorage.getItem('sme_user_token');
+		return axios({
+			method: 'get',
+			url: `${apiConfig.BASE_URL}/member/order/calcPrice`,
+			params: {
+				productPrice,
+				quantity,
+				shopId
+			},
+			headers: {Authorization: `Bearer ${token}`}
+		}).then(function(response) {
+			if (response.status === 200) {
+				return response.data
+			}
+		}).catch((function(error) {
+			console.log(error);
+			dispatch(emptyCart())
+		}))
+	}
 
-	// Handle quantity change
-	function handleChangeQuantity(id, qty) {
-		const Item = {
-			productId: id,
-			quantity: qty,
-		};
-		if (qty > 0 && qty !== null && typeof qty !== 'undefined') {
-			dispatch(updateCart(Item));
-		} else {
-			showMessage({
-				message: 'Vui lòng chọn số lượng cho sản phẩm',
-				type: 'danger',
-				icon: 'danger',
-				duration: 3000,
-			});
-		}
+	useFocusEffect(
+		React.useCallback(() => {
+			if (currentUser) {
+				async function calcPrice() {
+					const totalListPrice = listPrice && listPrice.map((el) => {
+						return getPriceCalc(el.productPrice, el.quantity, el.shopId);
+					})
+					setPrices(await Promise.all(totalListPrice))
+					setRefresh(false)
+				}
+				calcPrice()
+			}
+		}, [dispatch, refresh, flag, cart])
+	)
+
+	function handleChangeQuantity(Item) {
+		dispatch(updateCart(Item))
+		setFlag(!flag)
 	}
 
 	useEffect(() => {
 		props.navigation.setOptions({
 			title: 'Giỏ hàng',
 			headerStyle: {
-				backgroundColor: '#008A97',
+				backgroundColor: '#2ea65d',
 			},
 			headerTintColor: '#fff',
 			headerLeft: () => (
@@ -163,198 +126,267 @@ function CartScreen(props) {
 		)
 	}
 
-	// Navigate to checkout
-	function handleNextToCheckout() {
-		if (!currentUser) {
-			props.navigation.navigate('Login');
-			return;
+	let subTotal = 0;
+	let quantity = 0;
+	let discount = 0;
+	let nccDiscount = 0;
+	let totalAmount = 0;
+	let vatAmount = 0;
+	prices && prices.length > 0 && prices.map((el) => {
+		if (Number(el.quantity) === 0) {
+			dispatch(removeFromCart(el.id))
 		}
+		subTotal += Number(el.subTotal)
+		quantity += Number(el.quantity)
+		discount += Number(el.totalDiscount)
+		nccDiscount += Number(el.nccDiscount)
+		totalAmount += (Number(el.subTotal) - Number(el.totalDiscount))
+		vatAmount += Number(el.vatAmount)
+	})
 
-		props.navigation.navigate('Checkout', {
-			cartData: result,
-			cartItems: listPrice
-		});
+	const lastAmount = Number(totalAmount) + Number(vatAmount)
+
+	if (prices && prices.length > 0) {
+		var grouped = groupBy(prices, price => price.shop && price.shop.name);
 	}
 
-	// Check if cart is empty
-	const isCartEmpty = !result || !result.prices || result.prices.length === 0;
+	if (grouped) {
+		var groupArr = Object.entries(grouped);
+	}
+
+	const checkoutCall = async (items) => {
+		const token = await AsyncStorage.getItem('sme_user_token');
+		return axios({
+			method: 'post',
+			url: `${apiConfig.BASE_URL}/member/order/create-online`,
+			data: {
+				items: JSON.stringify(items),
+				shopId: Number(items[0].shop.id)
+			},
+			headers: {Authorization: `Bearer ${token}`}
+		}).then(function (response) {
+			if (response.status === 201) {
+				return response.data
+			}
+		}).catch(function(error){
+			showMessage({
+				message: error.response.data.message,
+				type: 'danger',
+				icon: 'danger',
+				duration: 3000,
+			});
+			console.log(error);
+		})
+	}
+
+	async function handleCheckout() {
+		const totalOrders = groupArr && groupArr.map((el) => {
+			return checkoutCall(el[1]);
+		})
+		const resultArr = await Promise.all(totalOrders);
+
+		if (resultArr.length > 0) {
+			console.log(resultArr);
+			props.navigation.navigate('CheckoutScreen', {
+				result: resultArr
+			})
+		}
+	}
 
 	return (
 		<>
-			<StatusBar barStyle={"light-content"} backgroundColor={'#008A97'} />
-				<View style={tw`flex-1 bg-gray-50`}>
-					{/* Stock Alert */}
-					{stockAlert && (
-						<View style={tw`mx-4 mt-4 p-3 bg-red-50 border border-red-200 rounded-lg`}>
-							<Text style={tw`text-red-700 font-medium`}>{stockAlert.message}</Text>
-							{stockAlert.stockInfo && (
-								<View style={tw`mt-2`}>
-									{stockAlert.stockInfo.outOfStockItems.map((item, idx) => (
-										<Text key={idx} style={tw`text-red-600 text-sm`}>
-											• {item.productName}: Đã hết hàng
-										</Text>
-									))}
-									{stockAlert.stockInfo.insufficientStockItems.map((item, idx) => (
-										<Text key={idx} style={tw`text-red-600 text-sm`}>
-											• {item.productName}: Yêu cầu {item.requestedQuantity}, còn lại {item.availableStock}
-										</Text>
-									))}
-								</View>
-							)}
-						</View>
-					)}
-
-					{!isCartEmpty ? (
-						<>
-							<ScrollView style={tw`flex-1`} showsVerticalScrollIndicator={false}>
-								<View style={tw`p-3`}>
-									<Text style={tw`text-gray-600 mb-4`}>
-										Bạn đang có <Text style={tw`font-medium`}>{result.prices.length}</Text> sản phẩm trong giỏ hàng
-									</Text>
-
-									{/* Cart Items */}
-									<View style={tw`bg-white rounded-lg shadow-sm border border-gray-200 mb-4`}>
-										{result.prices && result.prices.map((item, index) => (
-											<View key={index} style={tw`${result.prices.length > 1 && 'border-b border-gray-100'} p-2 relative`}>
-												<View style={tw`flex-row items-center justify-between`}>
-													<View style={tw`flex-row items-center flex-1`}>
-														<Image
-															source={{ uri: item.featureImage || 'https://via.placeholder.com/80' }}
-															style={tw`w-12 h-12 rounded mr-3`}
-														/>
-
-														<View style={tw`flex-1`}>
-															<Text style={tw`font-medium text-gray-800 mb-1`} numberOfLines={2}>
-																{item.name || 'Sản phẩm'}
-															</Text>
-															<Text style={tw`text-gray-500 text-sm mb-1`}>
-																Đơn giá: <Text style={tw`font-medium`}>{formatVND(item.price || 0)}</Text>
-															</Text>
-
-															{/* Stock Info */}
-															{item.availableStock !== undefined && (
-																<Text style={tw`text-xs ${
-																	item.stockStatus === 'OUT_OF_STOCK' ? 'text-red-600' :
-																	item.stockStatus === 'LOW_STOCK' ? 'text-orange-600' : 'text-cyan-600'
-																}`}>
-																	{item.stockStatus === 'OUT_OF_STOCK' ? '⚠️ Hết hàng' :
-																	 item.stockStatus === 'LOW_STOCK' ? '⚠️ Sắp hết hàng' : '✅ Còn hàng'}
-																	{item.availableStock > 0 && ` (Còn ${item.availableStock})`}
-																</Text>
-															)}
-														</View>
-													</View>
-
-													<InputSpinner
-														max={item.availableStock > 0 ? item.availableStock : undefined}
-														min={1}
-														step={1}
-														height={30}
-														width={100}
-														style={tw`shadow-none border border-gray-100`}
-														skin="circle"
-														colorMax="#f04048"
-														colorMin="#cbcbcb"
-														value={Number(item.quantity || 1)}
-														onChange={(num) => handleChangeQuantity(item.id || item.productId, num)}
-														disabled={item.stockStatus === 'OUT_OF_STOCK'}
-													/>
-												</View>
-
-												<TouchableOpacity
-													style={tw`absolute -top-2 -right-2`}
-													onPress={() => dispatch(removeFromCart(item.id || item.productId))}
-												>
-													<Icon name="close-circle" size={20} style={tw`text-red-600`} />
-												</TouchableOpacity>
-											</View>
-										))}
-									</View>
-								</View>
-							</ScrollView>
-
-							{/* Price Summary and Checkout */}
-							<View style={tw`bg-white border-t border-gray-200 p-3`}>
+			<StatusBar barStyle={"light-content"} backgroundColor={'#2ea65d'} />
+			{!cart ? <Text>Đang tải</Text> :
+				cart.items && cart.items.length > 0 ?
+					<View style={tw`flex bg-gray-100 min-h-full content-between`}>
+						<ScrollView
+							showsVerticalScrollIndicator={false}
+							overScrollMode={'never'}
+							scrollEventThrottle={16}
+							refreshControl={
+								<RefreshControl
+									refreshing={refresh}
+									onRefresh={() => setRefresh(true)}
+									title="đang tải"
+									titleColor="#000"
+									tintColor="#000"
+								/>
+							}
+						>
+							<View style={tw`pb-52`}>
 								<View>
-									<TouchableOpacity
-										style={tw`flex-row items-center justify-center`}
-										onPress={() => setShowDetail(!showDetail)}
-									>
-										<Icon name={showDetail ? 'chevron-down' : 'chevron-up'} size={24} style={tw`text-gray-500`} />
-									</TouchableOpacity>
-
-									{showDetail && (
+									{groupArr && groupArr.length > 0 &&
 										<View>
-											<View style={tw`flex-row justify-between mb-2 pb-2 border-b border-gray-100`}>
-												<Text>Tạm tính</Text>
-												<Text>{formatVND(result.subTotal || 0)}</Text>
-											</View>
+											{groupArr.map((el, index) => (
+												<View style={tw`mb-5 bg-white`}>
+													{el[0] &&
+														<View style={tw`border-b border-gray-100 p-3 flex flex-row items-center`}>
+															<Icon name={"store"} size={16} style={tw`mr-2 text-green-600`} />
+															<Text style={tw`font-medium`}>{el[0]}</Text>
+														</View>
+													}
+													{el[1].length > 0 && el[1].map((item) => (
+														<View style={tw`relative rounded mx-3 mb-3 bg-white p-3`}>
+															<View style={tw`flex flex-row items-center`} key={index}>
+																<View style={tw`mr-3`}>
+																	<Image
+																		source={{ uri: item.image }}
+																		style={tw`w-26 h-26`}
+																	/>
+																</View>
+																<View>
+																	<View style={tw`mb-3`}>
+																		<Text
+																			style={tw`font-medium mb-1 mr-26`}
+																			numberOfLines={2}
+																			ellipsizeMode={"tail"}
+																		>
+																			{item.name}
+																		</Text>
+																		<Text
+																			style={tw`font-medium text-red-600`}
+																		>
+																			{item.price && formatVND(item.price)}
+																		</Text>
+																		<Text
+																			style={tw`text-xs italic`}>Kho: {item.inStock} sản
+																			phẩm</Text>
+																	</View>
+																	<InputSpinner
+																		max={item.inStock}
+																		min={1}
+																		step={1}
+																		height={40}
+																		width={150}
+																		style={tw`shadow-none border border-gray-200`}
+																		skin={"square"}
+																		colorMax={"#f04048"}
+																		colorMin={"#cbcbcb"}
+																		value={Number(item.quantity)}
+																		onChange={(num) => {
+																			//handleChangeQuantity(item.id, num)
+																			handleChangeQuantity({
+																				productPrice: item.id,
+																				quantity: num,
+																				inStock: Number(item.inStock),
+																				productId: item.productId,
+																				shopId: item.shop.id
+																			})
+																		}}
+																	/>
 
-											{result.productDiscount && result.productDiscount.amount > 0 && (
-												<View style={tw`flex-row justify-between mb-2 pb-2 border-b border-gray-50`}>
-													<Text>{result.productDiscount.description || 'Giảm giá SP'}</Text>
-													<Text style={tw`text-red-600`}>-{formatVND(result.productDiscount.amount)}</Text>
+																</View>
+															</View>
+															<View style={tw`absolute top-0 left-0`}>
+																<TouchableOpacity
+																	style={tw`flex flex-row items-center bg-red-600 p-1 rounded-tl rounded-br`}
+																	onPress={() => dispatch(removeFromCart(item.id))}
+																>
+																	<Icon name={"minus-circle"} style={tw`text-white`} />
+																	<Text style={tw`text-white text-xs`}>Xoá</Text>
+																</TouchableOpacity>
+															</View>
+														</View>
+													))}
 												</View>
-											)}
+											))}
 
-											{result.positionDiscount && result.positionDiscount.amount > 0 && (
-												<View style={tw`flex-row justify-between mb-2 pb-2 border-b border-gray-50`}>
-													<Text>{result.positionDiscount.description || `Chiết khấu (${result.positionDiscount.percent || 0}%)`}</Text>
-													<Text style={tw`text-red-600`}>-{formatVND(result.positionDiscount.amount)}</Text>
-												</View>
-											)}
-
-											{result.shipping && !result.shipping.isFree && (
-												<View style={tw`flex-row justify-between mb-2 pb-2 border-b border-gray-50`}>
-													<Text>Phí vận chuyển</Text>
-													<Text style={tw`text-blue-600`}>+{formatVND(result.shipping.fee || 0)}</Text>
-												</View>
-											)}
-
-											{result.totalRewardToken > 0 && (
-												<View style={tw`flex-row justify-between mb-2 pb-2 border-b border-gray-100`}>
-													<Text style={tw`text-gray-600`}>🎁 Tặng</Text>
-													<Text style={tw`text-cyan-600 font-medium`}>
-														+{result.totalRewardToken} {settings && settings.point_code}
-													</Text>
-												</View>
-											)}
 										</View>
-									)}
-
-									<View style={tw`flex-row justify-between mb-3`}>
-										<Text style={tw`font-medium text-base text-gray-600`}>Tổng tiền</Text>
-										<Text style={tw`text-cyan-600 font-bold text-base`}>
-											{formatVND(Number(result.finalAmount || result.lastAmount))}
-										</Text>
-									</View>
-
-									<TouchableOpacity
-										style={tw`bg-red-500 py-3 rounded-lg flex items-center`}
-										onPress={handleNextToCheckout}
-									>
-										<View style={tw`flex flex-row items-center`}>
-											<Text style={tw`text-white font-medium uppercase`}>Tiếp theo</Text>
-											<Icon name={"arrow-right"} style={tw`ml-2 text-white`} size={18} />
-										</View>
-									</TouchableOpacity>
+									}
 								</View>
 							</View>
-						</>
-					) : (
-						<View style={tw`flex-1 justify-center items-center p-8`}>
-							<Icon name="cart-off" size={80} style={tw`text-gray-200 mb-4`} />
-							<Text style={tw`text-gray-500 text-lg mb-6 text-center`}>Chưa có sản phẩm trong giỏ hàng</Text>
-							<TouchableOpacity
-								onPress={() => props.navigation.navigate('Products')}
-								style={tw`bg-cyan-600 px-6 py-3 rounded-md`}
-							>
-								<Text style={tw`text-white font-medium`}>Bắt đầu mua sắm</Text>
-							</TouchableOpacity>
-						</View>
-					)}
-				</View>
+						</ScrollView>
+
+						{
+							currentUser && currentUser ?
+
+								<>
+									<View
+										style={tw`absolute bottom-0 android:bottom-14 bg-white w-full pt-1 pb-5 shadow-lg px-3`}>
+										<View style={tw`mb-2`}>
+											<View style={tw`flex items-center content-center`}>
+												<TouchableOpacity
+													onPress={() => setShowDetail(!showDetail)}
+												>
+													<Icon name={showDetail ? 'chevron-down' : 'chevron-up'} size={30} />
+												</TouchableOpacity>
+											</View>
+											{showDetail &&
+												<View>
+													<View
+														style={tw`flex flex-row items-center justify-between mb-2 border-b border-gray-100 pb-2`}>
+														<Text>Tổng</Text>
+														<Text>{formatVND(Number(subTotal) + Number(nccDiscount))}</Text>
+													</View>
+													{nccDiscount > 0 &&
+														<View
+															style={tw`flex flex-row items-center justify-between mb-2 border-b border-gray-100 pb-2`}>
+															<Text>Khuyến mại từ Nhà cung cấp</Text>
+															<Text
+																style={tw`text-red-500`}>-{formatVND(nccDiscount)}</Text>
+														</View>
+													}
+													<View
+														style={tw`flex flex-row items-center justify-between mb-2 border-b border-gray-100 pb-2`}>
+														<Text>Tạm tính (Đã bao gồm VAT)</Text>
+														<Text>{formatVND(Number(subTotal) + Number(vatAmount))}</Text>
+													</View>
+													{discount > 0 &&
+														<View
+															style={tw`flex flex-row items-center justify-between mb-2 border-b border-gray-100 pb-2`}>
+															<Text>E-voucher giảm giá</Text>
+															<Text
+																style={tw`text-red-500`}>-{formatVND(discount)}</Text>
+														</View>
+													}
+												</View>
+											}
+											<View style={tw`flex flex-row items-center justify-between mb-1`}>
+												<Text>Tổng tiền</Text>
+												<Text
+													style={tw`text-green-600 text-base font-bold`}>{formatVND(lastAmount)}</Text>
+											</View>
+										</View>
+										<View>
+											<TouchableOpacity
+												style={tw`bg-green-600 px-5 py-3 rounded w-full flex items-center justify-between`}
+												onPress={() => handleCheckout()}
+											>
+												<Text style={tw`text-white font-bold uppercase`}>đặt hàng</Text>
+											</TouchableOpacity>
+										</View>
+									</View>
+								</>
+
+								:
+								<>
+									<View style={tw`absolute bottom-0 bg-white w-full py-3 shadow-lg px-3`}>
+										<TouchableOpacity
+											onPress={() => props.navigation.navigate('Login')}
+											style={tw`bg-orange-500 px-5 py-3 rounded flex items-center`}
+										>
+											<Text style={tw`text-white uppercase font-medium`}>Đăng nhập để đặt
+												hàng</Text>
+										</TouchableOpacity>
+									</View>
+								</>
+						}
+
+					</View>
+					:
+					<View style={tw`flex items-center content-center py-30`}>
+						<Icon name={"shopping-outline"} size={50} style={tw`mb-5 text-gray-500`} />
+						<Text style={tw`mb-5`}>Chưa có sản phẩm trong giỏ hàng</Text>
+						<TouchableOpacity
+							onPress={() => props.navigation.navigate('Products')}
+							style={tw`bg-green-600 px-5 py-2 rounded`}
+						>
+							<Text style={tw`text-white`}>Bắt đầu mua sắm</Text>
+						</TouchableOpacity>
+					</View>
+			}
 		</>
+
 	);
 }
 

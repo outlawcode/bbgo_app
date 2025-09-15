@@ -27,7 +27,7 @@ export function checkRole(role, permissions) {
 	return !!permissions.includes(role);
 }
 export function formatBalance(n) {
-	var parts = Number(n).toFixed(2).toString().split(".");
+	var parts = Number(n).toFixed(3).toString().split(".");
 	const numberPart = parts[0];
 	const decimalPart = parts[1];
 	const thousands = /\B(?=(\d{3})+(?!\d))/g;

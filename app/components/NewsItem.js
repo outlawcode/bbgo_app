@@ -14,11 +14,11 @@ function NewsItem(props) {
 			<View>
 				<Image
 					source={{uri: props.item.featureImage}}
-					style={[tw`w-full h-32 rounded-md`, {resizeMode: 'cover'}]}
+					style={[tw`w-full h-32 rounded`, {resizeMode: 'cover'}]}
 				/>
 			</View>
 			<View style={tw`p-2 border-t border-gray-100`}>
-				<Text style={tw`font-medium text-gray-600`} numberOfLines={2} ellipsizeMode='tail'>{props.item.title}</Text>
+				<Text  style={tw`font-medium`} numberOfLines={2} ellipsizeMode='tail'>{props.item.title}</Text>
 			</View>
 		</TouchableOpacity>
 	);

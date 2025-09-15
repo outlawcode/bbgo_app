@@ -50,7 +50,7 @@ function PostCategoryScreen(props) {
 		props.navigation.setOptions({
 			title: null,
 			headerStyle: {
-				backgroundColor: '#008A97',
+				backgroundColor: '#2ea65d',
 			},
 			headerTintColor: '#fff',
 			headerLeft: () => (
@@ -113,11 +113,11 @@ function PostCategoryScreen(props) {
 									catId: category.detail.parent.id,
 									catSlug: category.detail.parent.slug,
 								})}
-								style={tw`border border-cyan-600 w-1/2 flex items-center py-2 rounded-full`}
+								style={tw`border border-blue-500 w-1/2 flex items-center py-2 rounded-full`}
 							>
 								<View style={tw`flex items-center flex-row`}>
-									<Icon name={"arrow-left"} style={tw`mr-1 text-cyan-600`} size={18} />
-									<Text  style={tw`text-cyan-600 font-bold`}>{category.detail.parent.name}</Text>
+									<Icon name={"arrow-left"} style={tw`mr-1 text-blue-500`} size={18} />
+									<Text  style={tw`text-blue-500 font-bold`}>{category.detail.parent.name}</Text>
 								</View>
 
 							</TouchableOpacity>
@@ -125,7 +125,7 @@ function PostCategoryScreen(props) {
 					}
 					<View style={tw`bg-white py-3`}>
 						<View style={tw`ml-3 flex items-center flex-row`}>
-							<Text  style={tw`font-bold uppercase text-cyan-600`}>{category && category.detail && category.detail.name}</Text>
+							<Text  style={tw`font-bold uppercase text-blue-500`}>{category && category.detail && category.detail.name}</Text>
 						</View>
 
 						{category && category.posts && category.posts.length > 0 ?

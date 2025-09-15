@@ -23,7 +23,7 @@ const config = {
 }
 
 const linking = {
-    prefixes: ['bbgo://app'],
+    prefixes: ['smemart://app'],
     config
 }
 

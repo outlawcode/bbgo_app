@@ -6,9 +6,6 @@ import { SceneMap, TabBar, TabView } from "react-native-tab-view";
 import { useDispatch } from "react-redux";
 import OrderList from "app/screens/Orders/OrderList";
 import { useIsFocused } from "@react-navigation/native";
-import axios from "axios";
-import AsyncStorage from "@react-native-community/async-storage";
-import apiConfig from "app/config/api-config";
 
 const styles = StyleSheet.create({
 	activeTabTextColor: {
@@ -23,20 +20,12 @@ function OrdersScreen(props) {
 	const dispatch = useDispatch()
 	const isFocused = useIsFocused();
 	const [refresh, setRefresh] = useState(false)
-	const [orderCounts, setOrderCounts] = useState({
-		all: 0,
-		pending: 0,
-		approved: 0,
-		delivering: 0,
-		completed: 0,
-		cancelled: 0
-	});
 
 	useEffect(() => {
 		props.navigation.setOptions({
 			title: 'Đơn hàng',
 			headerStyle: {
-				backgroundColor: '#008A97',
+				backgroundColor: '#2ea65d',
 			},
 			headerTintColor: '#fff',
 			headerLeft: () => (
@@ -60,42 +49,6 @@ function OrdersScreen(props) {
 			)
 		})
 	}, [dispatch])
-
-	// Fetch order counts for each tab
-	const fetchOrderCounts = async () => {
-		try {
-			const token = await AsyncStorage.getItem('sme_user_token');
-			if (!token) return;
-
-			const headers = { Authorization: `Bearer ${token}` };
-			
-			// Fetch all orders to get counts
-			const response = await axios.get(`${apiConfig.BASE_URL}/member/orders?page=1&limit=1000`, { headers });
-			
-			if (response.data && response.data.list) {
-				const orders = response.data.list;
-				
-				const counts = {
-					all: orders.length,
-					pending: orders.filter(order => order.status === 'Chờ thanh toán').length,
-					approved: orders.filter(order => order.status === 'Đã duyệt' && order.process === 'Chờ lấy hàng').length,
-					delivering: orders.filter(order => order.status === 'Đã duyệt' && order.process === 'Đang giao').length,
-					completed: orders.filter(order => order.status === 'Hoàn thành' && order.process === 'Đã nhận').length,
-					cancelled: orders.filter(order => order.status === 'Huỷ').length
-				};
-				
-				setOrderCounts(counts);
-			}
-		} catch (error) {
-			console.log('Error fetching order counts:', error);
-		}
-	};
-
-	useEffect(() => {
-		if (isFocused) {
-			fetchOrderCounts();
-		}
-	}, [isFocused, refresh]);
 
 	const [index, setIndex] = React.useState(props.route.params && props.route.params.position ? props.route.params.position : 0);
 	const [routes] = React.useState([
@@ -128,35 +81,14 @@ function OrdersScreen(props) {
 
 	const initialLayout = { width: Dimensions.get('window').width };
 
-	const getCountForTab = (key) => {
-		switch (key) {
-			case '1': return orderCounts.all;
-			case '2': return orderCounts.pending;
-			case '3': return orderCounts.approved;
-			case '4': return orderCounts.delivering;
-			case '5': return orderCounts.completed;
-			case '6': return orderCounts.cancelled;
-			default: return 0;
-		}
-	};
-
 	const renderLabel = ({ route, focused, color }) => {
-		const count = getCountForTab(route.key);
-		
 		return (
-			<View style={tw`w-full items-center`}>
+			<View style={tw`w-full`}>
 				<Text
 					style={focused ? styles.activeTabTextColor : styles.tabTextColor}
 				>
 					{route.title}
 				</Text>
-				{count > 0 && (
-					<View style={tw`mt-1 bg-cyan-600 rounded-full px-2 py-0.5 min-w-5`}>
-						<Text style={tw`text-white text-xs font-bold text-center`}>
-							{count > 99 ? '99+' : count}
-						</Text>
-					</View>
-				)}
 			</View>
 		)
 	}
@@ -164,9 +96,8 @@ function OrdersScreen(props) {
 	const renderTabBar = props => (
 		<TabBar
 			{...props}
-			indicatorStyle={{ backgroundColor: '#008A97'}}
-			style={{ backgroundColor: 'white' }} 
-			tabStyle={{width: 120, paddingVertical: 8}}
+			indicatorStyle={{ backgroundColor: 'black'}}
+			style={{ backgroundColor: 'white' }} tabStyle={{width: 120}}
 			renderLabel={renderLabel}
 			scrollEnabled
 		/>

@@ -4,6 +4,7 @@ import tw from "twrnc";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Carousel from "react-native-snap-carousel";
 import ProductItem from "app/components/ProductItem";
+import ProjectItem from "app/components/ProjectItem";
 
 function ProductList(props) {
 	const { width: viewportWidth } = Dimensions.get('window');
@@ -33,10 +34,14 @@ function ProductList(props) {
 					activeSlideAlignment={'start'}
 					inactiveSlideScale={1}
 					inactiveSlideOpacity={1}
-					data={props.items && props.items}
+					data={props.items && props.items.list}
 					renderItem={({item}) => (
 						<View style={tw`px-2 py-1`}>
-							<ProductItem item={item} navigation={props.navigation} />
+							{props.type === 'Dự án' ?
+								<ProjectItem item={item} navigation={props.navigation} />
+								:
+								<ProductItem item={item} navigation={props.navigation} />
+							}
 						</View>
 					)}
 					hasParallaxImages={false}

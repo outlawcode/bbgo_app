@@ -21,9 +21,9 @@ function PostsScreen(props) {
 
 	useEffect(() => {
 		props.navigation.setOptions({
-			title: 'Tin tức & Sự kiện',
+			title: 'TIN TỨC',
 			headerStyle: {
-				backgroundColor: '#008A97',
+				backgroundColor: '#2ea65d',
 			},
 			headerTintColor: '#fff',
 			headerLeft: () => (
@@ -103,7 +103,7 @@ function PostsScreen(props) {
 				<View style={tw`pb-10`}>
 					<View style={tw`bg-white py-3`}>
 						<FlatGrid
-							itemDimension={200}
+							itemDimension={170}
 							data={posts && posts.posts}
 							additionalRowStyle={tw`flex items-start`}
 							spacing={10}

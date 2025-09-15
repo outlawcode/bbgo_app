@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from "react";
+import React, {useEffect, useState, useMemo, useCallback} from "react";
 import {
 	Animated,
 	Dimensions,
@@ -15,13 +15,15 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import tw from "twrnc";
 import {apiClient} from "app/services/client";
 import Slideshow from "app/screens/Home/components/Slideshow";
+import CategoryHorizontalList from "app/screens/Home/components/CategoryHorizontalList";
 import FeatureProductList from "app/screens/Home/components/FeatureProductList";
 import News from "app/screens/Home/components/News";
 import CartIcon from "app/screens/Cart/components/cartIcon";
 import HomePageLoading from "app/screens/Home/components/HomePageLoading";
 import HomeProducts from "app/screens/Home/components/HomeProducts";
+import ShopList from "app/screens/Home/components/FeatureShopList";
+import Restaurants from "app/screens/Home/components/Restaurants";
 import LinearGradient from "react-native-linear-gradient";
-import FeedbackList from "app/screens/Home/components/FeedbackList";
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -42,12 +44,29 @@ const HomeScreen = (props) => {
 
 	// State để quản lý tất cả dữ liệu
 	const [pageData, setPageData] = useState({
+		hotProducts: null,
 		newProducts: null,
 		featuredProducts: null,
+		bestSelling: null,
+		featuredProjects: null,
+		slideShow: null,
+		services: null,
+		shop: null,
+		userShop: null,
+		restaurants: null
 	});
 
 	const [refresh, setRefresh] = useState(false);
 	const [loading, setLoading] = useState(false);
+	const [textSearchHolder, setTextSearchHolder] = useState('SME Mart');
+
+	// Thay đổi placeholder search sau 3 giây
+	useEffect(() => {
+		let timer1 = setTimeout(() => setTextSearchHolder('Tìm kiếm sản phẩm...'), 3000);
+		return () => {
+			clearTimeout(timer1);
+		};
+	}, [dispatch]);
 
 	// Fetch all data with Promise.all for better performance
 	const fetchAllData = useCallback(async () => {
@@ -66,12 +85,31 @@ const HomeScreen = (props) => {
 					params: {
 						limit: 8,
 						page: 1,
+						type: 'Sản phẩm',
+						tag: 'Sản phẩm hot',
 					}
 				}).then(response => {
 					console.log('✅ Hot Products API Response:', response.status, response.data?.list?.length || 0, 'items');
-					return { type: 'newProducts', data: response.data };
+					return { type: 'hotProducts', data: response.data };
 				}).catch(error => {
 					console.log('❌ Hot Products API Error:', error.message);
+					return { type: 'hotProducts', data: null };
+				})
+			);
+
+			promises.push(
+				apiClient.get('/product', {
+					params: {
+						limit: 8,
+						page: 1,
+						type: 'Sản phẩm',
+						tag: 'Sản phẩm mới',
+					}
+				}).then(response => {
+					console.log('✅ New Products API Response:', response.status, response.data?.list?.length || 0, 'items');
+					return { type: 'newProducts', data: response.data };
+				}).catch(error => {
+					console.log('❌ New Products API Error:', error.message);
 					return { type: 'newProducts', data: null };
 				})
 			);
@@ -81,18 +119,144 @@ const HomeScreen = (props) => {
 					params: {
 						limit: 8,
 						page: 1,
-						featured: 'Có'
+						type: 'Sản phẩm',
+						tag: 'Sản phẩm nổi bật',
 					}
 				}).then(response => {
-					console.log('✅ New Products API Response:', response.status, response.data?.list?.length || 0, 'items');
+					console.log('✅ Featured Products API Response:', response.status, response.data?.list?.length || 0, 'items');
 					return { type: 'featuredProducts', data: response.data };
 				}).catch(error => {
-					console.log('❌ New Products API Error:', error.message);
+					console.log('❌ Featured Products API Error:', error.message);
 					return { type: 'featuredProducts', data: null };
 				})
 			);
 
+			promises.push(
+				apiClient.get('/product', {
+					params: {
+						limit: 8,
+						page: 1,
+						bestSelling: 'Yes'
+					}
+				}).then(response => {
+					console.log('✅ Best Selling API Response:', response.status, response.data?.list?.length || 0, 'items');
+					return { type: 'bestSelling', data: response.data };
+				}).catch(error => {
+					console.log('❌ Best Selling API Error:', error.message);
+					return { type: 'bestSelling', data: null };
+				})
+			);
+
+			promises.push(
+				apiClient.get('/product', {
+					params: {
+						limit: 8,
+						page: 1,
+						type: 'Dự án',
+						featured: 'Có'
+					}
+				}).then(response => {
+					console.log('✅ Featured Projects API Response:', response.status, response.data?.list?.length || 0, 'items');
+					return { type: 'featuredProjects', data: response.data };
+				}).catch(error => {
+					console.log('❌ Featured Projects API Error:', error.message);
+					return { type: 'featuredProjects', data: null };
+				})
+			);
+
+			// Slideshow
+			if (settings?.pc_app_slideshow_id) {
+				console.log('🎬 Setting up slideshow API call...');
+				promises.push(
+					apiClient.get('/slideshow/' + settings.pc_app_slideshow_id)
+						.then(response => {
+							console.log('✅ Slideshow API Response:', response.status, 'items:', response.data?.items ? JSON.parse(response.data.items).length : 0);
+							return { type: 'slideShow', data: response.data };
+						}).catch(error => {
+						console.log('❌ Slideshow API Error:', error.message);
+						return { type: 'slideShow', data: null };
+					})
+				);
+			}
+
+			// Services
+			console.log('🍔 Setting up services API call...');
+			promises.push(
+				apiClient.get('/services/featured', {
+					params: {
+						map_lat: map && map.lat ? map.lat : null,
+						map_lng: map && map.lng ? map.lng : null,
+					}
+				}).then(response => {
+					console.log('✅ Services API Response:', response.status, response.data?.length || 0, 'items');
+					return { type: 'services', data: response.data };
+				}).catch(error => {
+					console.log('❌ Services API Error:', error.message);
+					return { type: 'services', data: null };
+				})
+			);
+
+			// Shops
+			console.log('🏪 Setting up shops API calls...');
+			promises.push(
+				apiClient.get('/user-shop', {
+					params: {
+						limit: 12,
+						page: 1,
+						isMart: 0,
+						featured: 'Có'
+					}
+				}).then(response => {
+					console.log('✅ Shops (isMart=0) API Response:', response.status, response.data?.list?.length || 0, 'items');
+					return { type: 'shop', data: response.data };
+				}).catch(error => {
+					console.log('❌ Shops API Error:', error.message);
+					return { type: 'shop', data: null };
+				})
+			);
+
+			promises.push(
+				apiClient.get('/user-shop', {
+					params: {
+						limit: 12,
+						page: 1,
+						isMart: 1,
+						featured: 'Có'
+					}
+				}).then(response => {
+					console.log('✅ User Shops (isMart=1) API Response:', response.status, response.data?.list?.length || 0, 'items');
+					return { type: 'userShop', data: response.data };
+				}).catch(error => {
+					console.log('❌ User Shops API Error:', error.message);
+					return { type: 'userShop', data: null };
+				})
+			);
+
+			// Restaurants
+			console.log('🍽️ Setting up restaurants API call...');
+			promises.push(
+				apiClient.get('/services', {
+					params: {
+						map_lat: map && map.lat ? map.lat : null,
+						map_lng: map && map.lng ? map.lng : null,
+						type: 'Đồ ăn',
+						featured: 'Có',
+						limit: 10
+					}
+				}).then(response => {
+					console.log('✅ Restaurants API Response:', response.status, response.data?.restaurants?.length || 0, 'items');
+					return { type: 'restaurants', data: response.data?.restaurants || [] };
+				}).catch(error => {
+					console.log('❌ Restaurants API Error:', error.message);
+					return { type: 'restaurants', data: null };
+				})
+			);
+
+			console.log('⏳ Waiting for all API calls to complete...');
+			// Wait for all promises to complete
 			const results = await Promise.all(promises);
+			console.log('🎉 All API calls completed! Results:', results.length);
+
 			// Process results and update state
 			const newPageData = { ...pageData };
 			results.forEach((result, index) => {
@@ -121,22 +285,17 @@ const HomeScreen = (props) => {
 
 	// Destructure pageData để dễ dàng sử dụng trong JSX
 	const {
+		hotProducts,
 		newProducts,
 		featuredProducts,
+		bestSelling,
+		featuredProjects,
+		slideShow,
+		services,
+		shop,
+		userShop,
+		restaurants
 	} = pageData;
-
-	let testimonials = []
-	let slideshow = []
-
-	if (settings) {
-		if (settings.testimonials) {
-			testimonials = JSON.parse(settings && settings.testimonials);
-		}
-		if (settings.app_slideshow) {
-			slideshow = JSON.parse(settings && settings.app_slideshow);
-		}
-
-	}
 
 	// Memoized header component
 	const renderHeader = useCallback(() => (
@@ -166,30 +325,30 @@ const HomeScreen = (props) => {
 
 			{/* Header content */}
 			<View style={[
-				tw`${Platform.OS === 'ios' ? 'pt-12' : 'pt-8'} pb-1 px-4 flex-row items-center justify-between bg-white`,
+				tw`${Platform.OS === 'ios' ? 'pt-12' : 'pt-8'} pb-3 px-4 flex-row items-center justify-between`,
 				{ height: '100%' }
 			]}>
 				{/* Logo only */}
-				<View style={tw`flex-row items-center bg-white`}>
+				<View style={tw`flex-row items-center`}>
 					<Image
-						source={{uri: settings && settings.website_logo}}
-						style={tw`h-12 w-12 mr-3`}
+						source={{uri: settings && settings.app_logo}}
+						style={tw`h-9 w-9 mr-2`}
 						resizeMode="contain"
 					/>
-					<TouchableOpacity
-						activeOpacity={0.9}
-						style={tw`flex flex-row items-center bg-gray-100 rounded-md px-3 py-2 w-64 shadow-sm relative`}
-						onPress={() => props.navigation.navigate("SearchScreen", {
-							featuredProducts: featuredProducts && featuredProducts.list
-						})}
-					>
-						<Text style={tw`text-gray-500`}>Tìm kiếm sản phẩm...</Text>
-						<Icon name="magnify" size={20} style={tw`absolute right-3 text-gray-500`}/>
-					</TouchableOpacity>
+					<Text style={tw`text-lg font-bold text-green-600`}>SME Mart</Text>
 				</View>
 
 				{/* Action buttons */}
 				<View style={tw`flex-row items-center`}>
+					<TouchableOpacity
+						activeOpacity={0.7}
+						onPress={() => props.navigation.navigate("SearchScreen", {
+							featuredProducts: featuredProducts && featuredProducts.product
+						})}
+						style={tw`p-2 mr-2`}
+					>
+						<Icon name="magnify" size={22} style={tw`text-gray-700`} />
+					</TouchableOpacity>
 
 					<CartIcon
 						navigation={props.navigation}
@@ -208,12 +367,26 @@ const HomeScreen = (props) => {
 		</Animated.View>
 	), [headerOpacity, settings, featuredProducts, props.navigation]);
 
+	// Search bar component
+	const renderSearchBar = useCallback(() => (
+		<TouchableOpacity
+			activeOpacity={0.9}
+			style={tw`flex flex-row items-center bg-gray-100 rounded-full px-4 py-3 mx-4 my-3 shadow-sm`}
+			onPress={() => props.navigation.navigate("SearchScreen", {
+				featuredProducts: featuredProducts && featuredProducts.product
+			})}
+		>
+			<Icon name="magnify" size={20} style={tw`mr-2 text-gray-500`}/>
+			<Text style={tw`text-gray-500`}>{textSearchHolder}</Text>
+		</TouchableOpacity>
+	), [textSearchHolder, featuredProducts, props.navigation]);
+
 	// Login section with modern design
 	const renderLoginSection = useCallback(() => (
 		!currentUser && (
 			<View style={tw`mx-4 mb-5 overflow-hidden rounded-2xl`}>
 				<LinearGradient
-					colors={['#008a97', '#008A97']}
+					colors={['#4ade80', '#16a34a']}
 					start={{x: 0, y: 0}}
 					end={{x: 1, y: 0}}
 					style={tw`p-4 rounded-2xl`}
@@ -221,10 +394,10 @@ const HomeScreen = (props) => {
 					<View style={tw`flex-row justify-between items-center`}>
 						<View style={tw`w-3/4`}>
 							<Text style={tw`text-white font-bold text-lg mb-1`}>
-								Chào {getTimeOfDay()}!
+								Chào mừng bạn!
 							</Text>
 							<Text style={tw`text-white text-opacity-90 mb-3`}>
-								Mời bạn đăng nhập để nhận nhiều ưu đãi hấp dẫn và quản lý đơn hàng dễ dàng hơn!
+								Đăng nhập để nhận nhiều ưu đãi hấp dẫn và quản lý đơn hàng dễ dàng hơn
 							</Text>
 							<TouchableOpacity
 								onPress={() => props.navigation.navigate('Login', {
@@ -232,12 +405,12 @@ const HomeScreen = (props) => {
 								})}
 								style={tw`bg-white px-4 py-2 rounded-full flex-row items-center self-start shadow-md`}
 							>
-								<Text style={tw`text-cyan-600 font-medium`}>ĐĂNG NHẬP</Text>
-								<Icon name="arrow-right" size={16} style={tw`text-cyan-600 ml-1`} />
+								<Text style={tw`text-green-600 font-medium`}>ĐĂNG NHẬP</Text>
+								<Icon name="arrow-right" size={16} style={tw`text-green-600 ml-1`} />
 							</TouchableOpacity>
 						</View>
-						<View style={tw`absolute -right-2 -top-2 opacity-20`}>
-							<Icon name="gift-open-outline" size={100} style={tw`text-white`} />
+						<View style={tw`absolute -right-5 -top-5 opacity-20`}>
+							<Icon name="account-circle" size={100} style={tw`text-white`} />
 						</View>
 					</View>
 				</LinearGradient>
@@ -252,14 +425,14 @@ const HomeScreen = (props) => {
 				<View style={tw`bg-${color}-50 p-2 rounded-full mr-2`}>
 					<Icon name={icon} size={20} style={tw`text-${color}-600`} />
 				</View>
-				<Text style={tw`text-gray-700 font-medium`}>{title}</Text>
+				<Text style={tw`text-gray-800 font-bold text-base uppercase`}>{title}</Text>
 			</View>
 			{showViewAll && (
 				<TouchableOpacity
 					style={tw`flex-row items-center`}
 					onPress={onPress}
 				>
-					<Text style={tw`mr-1 text-${color}-500 font-medium`}>Xem thêm</Text>
+					<Text style={tw`mr-1 text-${color}-600 font-medium`}>Xem thêm</Text>
 					<Icon name="chevron-right" size={16} style={tw`text-${color}-600`} />
 				</TouchableOpacity>
 			)}
@@ -272,26 +445,11 @@ const HomeScreen = (props) => {
 			refreshing={refresh}
 			onRefresh={() => setRefresh(true)}
 			title="đang tải"
-			titleColor="#008A97"
-			tintColor="#008A97"
-			colors={['#008A97']}
+			titleColor="#16a34a"
+			tintColor="#16a34a"
+			colors={['#16a34a']}
 		/>
 	), [refresh]);
-
-	const getTimeOfDay = () => {
-		const now = new Date();
-		const hour = now.getHours();
-
-		if (hour >= 5 && hour < 12) {
-			return 'Buổi sáng';
-		} else if (hour >= 12 && hour < 18) {
-			return 'Buổi chiều';
-		} else if (hour >= 18 && hour < 22) {
-			return 'Buổi tối';
-		} else {
-			return 'Buổi tối';
-		}
-	};
 
 	return (
 		<View style={tw`flex bg-gray-50 min-h-full`}>
@@ -314,7 +472,7 @@ const HomeScreen = (props) => {
 					[{ nativeEvent: { contentOffset: { y: scrollY } } }],
 					{ useNativeDriver: false }
 				)}
-				contentContainerStyle={tw`pb-10 pt-3`}
+				contentContainerStyle={tw`pb-20`}
 				refreshControl={refreshControl}
 			>
 				{/* Padding to accommodate fixed header */}
@@ -324,18 +482,20 @@ const HomeScreen = (props) => {
 					<HomePageLoading />
 				) : (
 					<>
+						{renderSearchBar()}
+
 						{/* Slideshow with rounded corners */}
-						{settings && slideshow && (
-							<View style={tw`mx-4 rounded-md overflow-hidden shadow-sm bg-white`}>
+						{slideShow && slideShow.items && (
+							<View style={tw`mx-4 rounded-2xl overflow-hidden shadow-sm bg-white`}>
 								<Slideshow
-									items={slideshow}
+									items={JSON.parse(slideShow.items)}
 									navigation={props.navigation}
 								/>
 							</View>
 						)}
 
 						{/* Categories */}
-						{/*<View style={tw`mt-4 bg-white pb-3 mb-4`}>
+						<View style={tw`mt-4 bg-white pb-3 mb-4`}>
 							<SectionHeader
 								title="Danh mục sản phẩm"
 								icon="view-grid"
@@ -346,29 +506,7 @@ const HomeScreen = (props) => {
 								category={categories && categories}
 								navigation={props.navigation}
 							/>
-						</View>*/}
-
-						{/* New Products */}
-						{featuredProducts && featuredProducts.list && featuredProducts.list.length > 0 && (
-							<View style={tw`mb-4 bg-white rounded-xl shadow-sm overflow-hidden`}>
-								<SectionHeader
-									title="Dành cho bạn"
-									icon="check-decagram"
-									color="cyan"
-									onPress={() => props.navigation.navigate("Products")}
-								/>
-								<FeatureProductList
-									title={"Dành cho bạn"}
-									icon={"brightness-percent"}
-									iconColor={"text-red-500"}
-									titleColor={"text-gray-800"}
-									items={newProducts.list}
-									navigation={props.navigation}
-									type={"Sản phẩm"}
-									viewAllButton={false}
-								/>
-							</View>
-						)}
+						</View>
 
 						{renderLoginSection()}
 
@@ -377,8 +515,135 @@ const HomeScreen = (props) => {
 							<View style={tw`mb-4 bg-white rounded-xl shadow-sm overflow-hidden`}>
 								<SectionHeader
 									title="Sản phẩm Mới"
-									icon="new-box"
+									icon="star"
+									color="red"
+									onPress={() => props.navigation.navigate("Products")}
+								/>
+								<FeatureProductList
+									title={"Sản phẩm Mới"}
+									icon={"brightness-percent"}
+									iconColor={"text-red-500"}
+									titleColor={"text-gray-800"}
+									items={newProducts}
+									navigation={props.navigation}
+									type={"Sản phẩm"}
+									viewAllButton={false}
+								/>
+							</View>
+						)}
+
+						{/* Hot Products */}
+						{hotProducts && hotProducts.list && hotProducts.list.length > 0 && (
+							<View style={tw`mb-4 bg-white rounded-xl shadow-sm overflow-hidden`}>
+								<SectionHeader
+									title="Sản phẩm Hot"
+									icon="fire"
+									color="red"
+									onPress={() => props.navigation.navigate("Products")}
+								/>
+								<FeatureProductList
+									title={"Sản phẩm Khuyến mại - Hot"}
+									icon={"brightness-percent"}
+									iconColor={"text-red-500"}
+									titleColor={"text-gray-800"}
+									items={hotProducts}
+									navigation={props.navigation}
+									type={"Sản phẩm"}
+									viewAllButton={false}
+								/>
+							</View>
+						)}
+
+						{/* Best Selling Products */}
+						{bestSelling && bestSelling.list && bestSelling.list.length > 0 && (
+							<View style={tw`mb-4 bg-white rounded-xl shadow-sm overflow-hidden`}>
+								<SectionHeader
+									title="Sản phẩm Bán chạy"
+									icon="shopping"
+									color="green"
+									onPress={() => props.navigation.navigate("Products")}
+								/>
+								<FeatureProductList
+									title={"Sản phẩm bán chạy"}
+									icon={"shopping"}
+									iconColor={"text-green-500"}
+									titleColor={"text-gray-800"}
+									items={bestSelling}
+									navigation={props.navigation}
+									type={"Sản phẩm"}
+									viewAllButton={false}
+								/>
+							</View>
+						)}
+
+						{/* Shops */}
+						{shop && shop.list && shop.list.length > 0 && (
+							<View style={tw`mb-4 bg-white rounded-xl shadow-sm overflow-hidden`}>
+								<SectionHeader
+									title="Siêu thị"
+									icon="storefront"
+									color="yellow"
+									onPress={() => props.navigation.navigate("Mart")}
+								/>
+								<ShopList
+									title={"Siêu thị"}
+									icon={"storefront"}
+									iconColor={"text-yellow-500"}
+									titleColor={"text-gray-800"}
+									items={shop}
+									navigation={props.navigation}
+								/>
+							</View>
+						)}
+
+						{/* User Shops */}
+						{userShop && userShop.list && userShop.list.length > 0 && (
+							<View style={tw`mb-4 bg-white rounded-xl shadow-sm overflow-hidden`}>
+								<SectionHeader
+									title="Gian hàng sản phẩm"
+									icon="storefront"
+									color="green"
+									onPress={() => props.navigation.navigate("Stores")}
+								/>
+								<ShopList
+									title={"Gian hàng sản phẩm"}
+									icon={"storefront"}
+									iconColor={"text-green-600"}
+									titleColor={"text-gray-800"}
+									items={userShop}
+									navigation={props.navigation}
+								/>
+							</View>
+						)}
+
+						{/* Restaurants */}
+						{restaurants && restaurants.length > 0 && (
+							<View style={tw`mb-4 bg-white rounded-xl shadow-sm overflow-hidden`}>
+								<SectionHeader
+									title="Gian hàng dịch vụ"
+									icon="silverware-fork-knife"
 									color="orange"
+									onPress={() => props.navigation.navigate("Foods", {
+										screen: "Foods",
+										params: {
+											slug: "food"
+										},
+									})}
+								/>
+								<Restaurants
+									items={restaurants}
+									navigation={props.navigation}
+								/>
+							</View>
+						)}
+
+						{/* New Products */}
+						{newProducts && newProducts.product && newProducts.product.list && newProducts.product.list.length > 0 && (
+							<View style={tw`mb-4 bg-white rounded-xl shadow-sm overflow-hidden`}>
+								<SectionHeader
+									title="Sản phẩm Mới"
+									icon="new-box"
+									color="red"
 									onPress={() => props.navigation.navigate("Products")}
 								/>
 								<FeatureProductList
@@ -386,7 +651,7 @@ const HomeScreen = (props) => {
 									icon={"check-decagram"}
 									iconColor={"text-blue-500"}
 									titleColor={"text-gray-800"}
-									items={newProducts.list}
+									items={newProducts.product}
 									navigation={props.navigation}
 									type={"Sản phẩm"}
 									viewAllButton={false}
@@ -395,7 +660,7 @@ const HomeScreen = (props) => {
 						)}
 
 						{/* Home Products */}
-						<View style={tw`bg-white rounded-xl shadow-sm overflow-hidden`}>
+						<View style={tw`mb-4 bg-white rounded-xl shadow-sm overflow-hidden`}>
 							<HomeProducts
 								settings={settings && settings}
 								navigation={props.navigation}
@@ -403,17 +668,27 @@ const HomeScreen = (props) => {
 							/>
 						</View>
 
-						{settings && settings.about_section_image2 &&
-							<View style={tw`mb-3 bg-gray-100`}>
-								<Image source={{uri: settings.about_section_image2}} style={tw`w-full h-auto`} />
+						{/* Featured Projects */}
+						{featuredProjects && featuredProjects.list && featuredProjects.list.length > 0 && (
+							<View style={tw`mb-4 bg-white rounded-xl shadow-sm overflow-hidden`}>
+								<SectionHeader
+									title="Dự án nổi bật"
+									icon="briefcase"
+									color="blue"
+									onPress={() => props.navigation.navigate("Projects")}
+								/>
+								<FeatureProductList
+									title={"Dự án nổi bật"}
+									icon={"check-decagram"}
+									iconColor={"text-blue-500"}
+									titleColor={"text-gray-800"}
+									items={featuredProjects}
+									navigation={props.navigation}
+									type={"Dự án"}
+									viewAllButton={false}
+								/>
 							</View>
-						}
-
-						{settings && testimonials &&
-							<FeedbackList
-								items={testimonials}
-							/>
-						}
+						)}
 
 						{/* News Section */}
 						<View style={tw`mb-4 bg-white rounded-xl shadow-sm overflow-hidden`}>

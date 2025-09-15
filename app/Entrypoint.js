@@ -2,19 +2,32 @@
  * React Native App
  * Everything starts from the Entry-point
  */
-import React, {useEffect} from "react";
-import {ActivityIndicator, LogBox, Platform, Text, TextInput} from "react-native";
-import {Provider, useDispatch, useSelector} from "react-redux";
-import {PersistGate} from 'redux-persist/es/integration/react';
-import {Provider as PaperProvider} from 'react-native-paper';
+import React, { useEffect } from "react";
+import {ActivityIndicator, LogBox, Platform, PushNotificationIOS, Text, TextInput} from "react-native";
+import { Provider, useDispatch, useSelector } from "react-redux";
+import { PersistGate } from 'redux-persist/es/integration/react';
+import { Provider as PaperProvider } from 'react-native-paper';
 
-import {CombinedDarkTheme, CombinedDefaultTheme, PaperThemeDark, PaperThemeDefault,} from 'app/config/theme-config';
+import {
+  PaperThemeDefault,
+  PaperThemeDark,
+  CombinedDefaultTheme,
+  CombinedDarkTheme,
+} from 'app/config/theme-config';
 import Navigator from 'app/navigation/index';
 import configureStore from 'app/store';
-import {GetProductCategories, GetSettings} from "app/store/actions/settingActions";
+import {GetProductCategories, GetSettings, SetMap} from "app/store/actions/settingActions";
 import FlashMessage from "react-native-flash-message";
-import {appUpgradeVersionCheck} from "app-upgrade-react-native-sdk";
-import {AppConfig} from "app/config/api-config";
+import { appUpgradeVersionCheck } from "app-upgrade-react-native-sdk";
+import { AppConfig } from "app/config/api-config";
+import firebase from '@react-native-firebase/app';
+import messaging from '@react-native-firebase/messaging';
+
+import { NavigationContainer, useNavigation } from '@react-navigation/native';
+
+
+import Geolocation from "@react-native-community/geolocation";
+import PushNotification from "react-native-push-notification";
 import {GetFCMToken, NotificationListener, requestUserPermission} from "app/utils/pushnotifycation";
 import {WalletConnectModal} from "@walletconnect/modal-react-native";
 import tw from "twrnc";
@@ -26,13 +39,13 @@ const projectId = 'b5adb2e19ab2dd031b96956954f8cc6c';
 console.log('Using WalletConnect Project ID:', projectId);
 
 const providerMetadata = {
-  name: 'BBGo',
-  description: 'Connect to BBGo',
-  url: 'https://bbgo.vn',
-  icons: ['https://api.bbgo.vn/v1/media/file/logo-8f66.png'],
+  name: 'SMEMart',
+  description: 'Connect to SMEMart',
+  url: 'https://smemart.net',
+  icons: ['https://api.smemart.net/v1/media/file/icon-512x512-07cb.png'],
   redirect: {
-    native: 'bbgo://',
-    universal: 'https://bbgo.vn'
+    native: 'smemart://',
+    universal: 'https://smemart.net'
   },
 };
 
@@ -166,6 +179,14 @@ const RootNavigation = (props) => {
   }, [dispatch, settings, currentUser])
 
   useEffect(() => {
+    Geolocation.getCurrentPosition(info => {
+      if (info) {
+        dispatch(SetMap({
+          lat: info.coords.latitude,
+          lng: info.coords.longitude
+        }))
+      }
+    });
     dispatch(GetSettings());
     dispatch(GetProductCategories());
   }, [])
@@ -173,7 +194,6 @@ const RootNavigation = (props) => {
   return (
     <PaperProvider theme={paperTheme}>
       <Navigator theme={combinedTheme} />
-      {/*<FloatingHotlineButton phoneNumber={(settings && settings.contact_hotline) ? settings.contact_hotline : "0909456789"} bottom={104} right={16} size={48} />*/}
     </PaperProvider>
   );
 };
@@ -181,8 +201,8 @@ const RootNavigation = (props) => {
 const EntryPoint = () => {
   const xApiKey = "OWY0NjM4ZTItOTM4MC00YjAxLTgwY2YtZTU1MmUxZjcwMjI5"; // Your project key
   const appInfo = {
-    appId: Platform.OS === 'android' ? 'com.bbherb.bbgo' : 'id6744519551', // Your app url in play store or app store
-    appName: 'BBGo', // Your app name
+    appId: Platform.OS === 'android' ? 'com.sme.mart' : 'id6744519551', // Your app url in play store or app store
+    appName: 'SMEMart', // Your app name
     appVersion: Platform.OS === 'android' ? AppConfig.androidVersion : AppConfig.iosVersion, // Your app version
     platform: Platform.OS === 'android' ? 'android' : 'iOS', // App Platform, android or ios
     environment: 'production', // App Environment, production, development

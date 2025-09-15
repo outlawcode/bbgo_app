@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 import {FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View} from "react-native";
 import {useDispatch, useSelector} from "react-redux";
 import tw from "twrnc";
-import {formatDate, formatVND} from "app/utils/helper";
+import {formatVND} from "app/utils/helper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import moment from "moment";
 import axios from "axios";
@@ -13,6 +13,7 @@ import {useIsFocused} from "@react-navigation/native";
 import DatePicker from 'react-native-neat-date-picker'
 import {LoadDataAction} from "app/screens/Auth/action";
 import WithdrawBankScreen from "app/screens/RewardWallet/WithdrawBankScreen";
+import DepositScreen from "app/screens/RewardWallet/DepositScreen.js";
 
 function RewardWalletScreen(props) {
 	const isFocused = useIsFocused();
@@ -44,7 +45,7 @@ function RewardWalletScreen(props) {
 						page,
 						rangeStart: '2022-01-01',
 						rangeEnd: '2050-01-01',
-						wallet: 'Ví tiền'
+						wallet: 'Ví tiền thưởng'
 					},
 					headers: { Authorization: `Bearer ${Token}` }
 				}).then(function(response) {
@@ -79,71 +80,58 @@ function RewardWalletScreen(props) {
 		}
 	}, [dispatch, limit, page, dateRange, flag, refresh, isFocused])
 
+	console.log('transactions', transactions);
+
 	return (
 		<View style={tw`flex bg-white min-h-full content-between`}>
-			<View style={tw`bg-cyan-600 px-3 pt-12 pb-3`}>
+			<View style={tw`bg-red-500 px-3 pt-12 pb-3`}>
 				<View style={tw`flex flex-row items-center justify-between`}>
 					<TouchableOpacity
 						onPress={() => props.navigation.goBack()}
 					>
 						<Icon name={"chevron-left"} size={30} style={tw`text-white`} />
 					</TouchableOpacity>
-
-					<TouchableOpacity
-						style={tw`flex flex-row items-center`}
-						onPress={() => props.navigation.navigate('Modal', {
-							content: <WithdrawBankScreen
-								navigation={props.navigation}
-								backScreen={'RewardWallet'}
-								wallet={'Ví tiền'}
-								minimum={settings && Number(settings.minimum_withdraw)}
-								maximum={currentUser && (Number(currentUser.rewardWallet) - Number(settings && settings.minimum_wallet_balance)) > 0 ? (Number(currentUser.rewardWallet) - Number(settings && settings.minimum_wallet_balance)) : 0}
-							/>
-						})}
-					>
-						<Icon name={"tray-arrow-down"} size={24} style={tw`text-white mr-1`} />
-						<Text style={tw`text-white`}>Rút tiền</Text>
-					</TouchableOpacity>
 				</View>
 
-				<View style={tw`bg-cyan-600 pb-2`}>
+				<View style={tw`bg-red-500 pb-2`}>
 					<View style={tw`flex items-center`}>
-						<Text style={tw`text-white mb-3 font-medium text-lg`}>Ví tiền</Text>
+						<Text style={tw`text-white mb-3 font-medium text-lg`}>Ví tiền thưởng</Text>
 						<Text style={tw`text-white text-xs mb-1`}>Số dư ví</Text>
 						<Text style={tw`text-white font-bold text-4xl`}>{currentUser && formatVND(currentUser.rewardWallet)}</Text>
 					</View>
 				</View>
 
-				{/*<View style={tw`flex flex-row items-center justify-between mt-5`}>
+				<View style={tw`flex flex-row items-center justify-between mt-5`}>
+					<TouchableOpacity
+						style={tw`flex flex-row items-center`}
+						onPress={() => props.navigation.navigate('Modal', {
+							content: <DepositScreen
+								navigation={props.navigation}
+								backScreen={'RewardWallet'}
+								wallet={'Ví tiền thưởng'}
+								currency={'tiền'}
+							/>
+						})}
+						//disabled={currentUser && currentUser.rewardWallet <= 0}
+					>
+						<Icon name={"tray-arrow-up"} size={24} style={tw`text-white mr-1`} />
+						<Text style={tw`text-white`}>Nạp tiền</Text>
+					</TouchableOpacity>
 					<TouchableOpacity
 						style={tw`flex flex-row items-center`}
 						onPress={() => props.navigation.navigate('Modal', {
 							content: <WithdrawBankScreen
 								navigation={props.navigation}
 								backScreen={'RewardWallet'}
-								wallet={'Ví tiền'}
-								minimum={settings && Number(settings.minimum_withdraw)}
-								maximum={currentUser && (Number(currentUser.rewardWallet) - Number(settings && settings.minimum_wallet_balance)) > 0 ? (Number(currentUser.rewardWallet) - Number(settings && settings.minimum_wallet_balance)) : 0}
+								wallet={'rewardWallet'}
 							/>
 						})}
+						//disabled={currentUser && currentUser.rewardWallet <= 0}
 					>
 						<Icon name={"tray-arrow-down"} size={24} style={tw`text-white mr-1`} />
 						<Text style={tw`text-white`}>Rút tiền</Text>
 					</TouchableOpacity>
-					<TouchableOpacity
-						style={tw`flex flex-row items-center`}
-						onPress={() => props.navigation.navigate('Modal', {
-							content: <WithdrawBankScreen
-								navigation={props.navigation}
-								backScreen={'RewardWallet'}
-								wallet={'Ví tiền'}
-							/>
-						})}
-					>
-						<Icon name={"tray-arrow-up"} size={24} style={tw`text-white mr-1`} />
-						<Text style={tw`text-white`}>Chuyển tiền</Text>
-					</TouchableOpacity>
-				</View>*/}
+				</View>
 			</View>
 			<ScrollView
 				showsVerticalScrollIndicator={false}

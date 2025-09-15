@@ -30,7 +30,7 @@ function PostDetailScreen(props) {
 		props.navigation.setOptions({
 			title: null,
 			headerStyle: {
-				backgroundColor: '#008A97',
+				backgroundColor: '#2ea65d',
 			},
 			headerTintColor: '#fff',
 			headerLeft: () => (
@@ -80,7 +80,7 @@ function PostDetailScreen(props) {
 
 			setLoading(true)
 			console.log('Fetching post with slug:', slug);
-
+			
 			await apiClient.get(`/post/${slug}`)
 				.then(function (response) {
 					if(response.status === 200) {
@@ -130,7 +130,7 @@ function PostDetailScreen(props) {
 			>
 				<View style={tw`pb-10 px-3`}>
 					<View style={tw`mt-3`}>
-						<Text  style={tw`font-bold text-lg text-cyan-600`}>
+						<Text  style={tw`font-bold text-lg text-green-600`}>
 							{result.post.title}
 						</Text>
 						<View style={tw`flex flex-row items-center`}>

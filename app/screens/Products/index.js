@@ -1,13 +1,15 @@
-import React, {useEffect, useState} from "react";
-import {RefreshControl, ScrollView, StatusBar, Text, TouchableOpacity, View} from "react-native";
+import React, { useEffect, useState } from "react";
+import { RefreshControl, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 import CartIcon from "app/screens/Cart/components/cartIcon";
-import {useDispatch, useSelector} from "react-redux";
-import {apiClient} from "app/services/client";
+import { useDispatch, useSelector } from "react-redux";
+import { apiClient } from "app/services/client";
+import CategoryHorizontalList from "app/screens/Home/components/CategoryHorizontalList";
 import ProductItem from "app/components/ProductItem";
-import {FlatGrid} from "react-native-super-grid";
+import { FlatGrid } from "react-native-super-grid";
 import ProductPageLoading from "app/screens/Products/components/ProductPageLoading";
+import ProjectItem from "app/components/ProjectItem";
 
 function ProductsScreen(props) {
 	const dispatch = useDispatch();
@@ -23,9 +25,9 @@ function ProductsScreen(props) {
 
 	useEffect(() => {
 		props.navigation.setOptions({
-			title: 'Sản phẩm',
+			title: 'CỬA HÀNG',
 			headerStyle: {
-				backgroundColor: '#008A97',
+				backgroundColor: '#2ea65d',
 			},
 			headerTintColor: '#fff',
 			headerLeft: () => (
@@ -55,11 +57,12 @@ function ProductsScreen(props) {
 	}, [])
 
 	async function getProducts(catid) {
-		await apiClient.get('/product',
+		await apiClient.get(`/shop-product`,
 			{
 				params: {
 					limit: 1000000,
 					category: catId === 'ALL' ? 'ALL' : [catid],
+					shopId: Number(settings && settings.admin_shop_id),
 				}
 			}
 		).then((result) => {
@@ -97,7 +100,7 @@ function ProductsScreen(props) {
 
 	return (
 		<View style={tw`flex bg-gray-100 min-h-full`}>
-			<StatusBar barStyle={"light-content"} backgroundColor={'#008A97'} />
+			<StatusBar barStyle={"light-content"} backgroundColor={'#2ea65d'} />
 			<View style={tw`bg-white py-3 px-3`}>
 				<ScrollView
 					horizontal
@@ -106,18 +109,18 @@ function ProductsScreen(props) {
 					<TouchableOpacity
 						activeOpacity={1}
 						onPress={() => setCatId('ALL')}
-						style={tw`mr-2 rounded border border-gray-200 px-3 py-2 ${catId === 'ALL' && 'bg-cyan-600'}`}
+						style={tw`mr-2 rounded border border-gray-200 px-3 py-2 ${catId === 'ALL' && 'bg-green-600'}`}
 					>
-						<Text style={tw`font-medium text-cyan-600 ${catId === 'ALL' && 'text-white'}`}>Tất cả</Text>
+						<Text style={tw`font-medium text-green-600 ${catId === 'ALL' && 'text-white'}`}>Tất cả</Text>
 					</TouchableOpacity>
 					{categories && categories.length > 0 && categories.map((item, index) => (
 						<TouchableOpacity
 							activeOpacity={1}
-							style={tw`mr-2 rounded border border-gray-100 px-3 py-2 ${catId === item.id && 'bg-cyan-600'}`}
+							style={tw`mr-2 rounded border border-gray-200 px-3 py-2 ${catId === item.id && 'bg-green-600'}`}
 							onPress={() => setCatId(item.id)}
 						>
 							<View>
-								<Text  style={tw`font-medium text-cyan-600 ${catId === item.id && 'text-white'}`}>{item.name}</Text>
+								<Text  style={tw`font-medium text-green-600 ${catId === item.id && 'text-white'}`}>{item.name}</Text>
 							</View>
 						</TouchableOpacity>
 					))}
@@ -140,20 +143,21 @@ function ProductsScreen(props) {
 				>
 					<View style={tw`pb-10`}>
 						<View style={tw`bg-white py-3`}>
-							<View style={tw`flex flex-row ml-3`}>
-								<Icon name={"check-decagram"} size={16} style={tw`text-cyan-600`} />
-								{catId === 'ALL' ?
-									<Text style={tw`font-medium text-gray-700 ml-2`}>Tất cả sản phẩm</Text>
-									:
-									<Text style={tw`font-medium text-gray-700 ml-2`}>{category && category.detail && category.detail.name}</Text>
-								}
-							</View>
+							{catId === 'ALL' ?
+								<Text style={tw`font-bold uppercase text-green-600 ml-3`}>Tất cả sản phẩm</Text>
+								:
+								<Text style={tw`font-bold uppercase text-green-600 ml-3`}>{category && category.detail && category.detail.name}</Text>
+							}
 							<FlatGrid
 								itemDimension={150}
-								data={products && products.list}
+								data={products && products.product && products.product.list}
 								additionalRowStyle={tw`flex items-start`}
 								spacing={10}
-								renderItem={({ item, index }) => (<ProductItem item={item} navigation={props.navigation} key={index} />)} />
+								renderItem={({ item, index }) => (
+									item.type === 'Dự án' ?
+										<ProjectItem item={item} navigation={props.navigation} key={index} /> :
+									<ProductItem item={item} navigation={props.navigation} key={index} />
+								)} />
 						</View>
 					</View>
 				</ScrollView>

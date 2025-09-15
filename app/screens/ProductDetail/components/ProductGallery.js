@@ -31,7 +31,7 @@ function ProductGallery(props) {
 				activeDot={
 					<View
 						style={{
-							backgroundColor: '#008A97',
+							backgroundColor: '#2ea65d',
 							width: 8,
 							height: 8,
 							borderRadius: 4,

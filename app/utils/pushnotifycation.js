@@ -23,7 +23,7 @@ export async function GetFCMToken({currentUser, os}) {
         if (fcmtoken) {
             console.log("FCM token: ", fcmtoken)
             console.log("Current user: ", currentUser ? currentUser.id : 'Not logged in')
-
+            
             await axios.post(
                 `${apiConfig.BASE_URL}/push-notify/subscribe`,
                 {
@@ -56,18 +56,25 @@ export const NotificationListener = () => {
         );
         if (remoteMessage.data) {
             if (remoteMessage.data.type === 'product' && remoteMessage.data.slug) {
-                Linking.openURL(`bbgo://app/product/${remoteMessage.data.slug}`)
+                console.log('Opening product with slug:', remoteMessage.data.slug, 'shopId:', remoteMessage.data.shopId);
+                if (remoteMessage.data.shopId) {
+                    Linking.openURL(`smemart://app/product/${remoteMessage.data.slug}?shopId=${remoteMessage.data.shopId}`)
+                } else {
+                    Linking.openURL(`smemart://app/product/${remoteMessage.data.slug}`)
+                }
             }
             if (remoteMessage.data.type === 'info' && remoteMessage.data.slug) {
-                Linking.openURL(`bbgo://app/post/${remoteMessage.data.slug}`)
+                console.log('Opening post with slug:', remoteMessage.data.slug);
+                Linking.openURL(`smemart://app/post/${remoteMessage.data.slug}`)
             }
             if (remoteMessage.data.type === 'order' && remoteMessage.data.slug) {
-                Linking.openURL(`bbgo://app/order/${remoteMessage.data.slug}`)
+                console.log('Opening order with slug:', remoteMessage.data.slug);
+                Linking.openURL(`smemart://app/order/${remoteMessage.data.slug}`)
             }
             if (remoteMessage.data.type === 'transaction' && remoteMessage.data.slug) {
                 console.log('Transaction notification:', remoteMessage.data.slug);
                 // Có thể mở transaction detail screen nếu có
-                // Linking.openURL(`bbgo://app/transaction/${remoteMessage.data.slug}`)
+                // Linking.openURL(`smemart://app/transaction/${remoteMessage.data.slug}`)
             }
         }
 
@@ -85,20 +92,25 @@ export const NotificationListener = () => {
 
                 if (remoteMessage.data) {
                     if (remoteMessage.data.type === 'product' && remoteMessage.data.slug) {
-                        Linking.openURL(`bbgo://app/product/${remoteMessage.data.slug}`)
+                        console.log('Opening product with slug:', remoteMessage.data.slug, 'shopId:', remoteMessage.data.shopId);
+                        if (remoteMessage.data.shopId) {
+                            Linking.openURL(`smemart://app/product/${remoteMessage.data.slug}?shopId=${remoteMessage.data.shopId}`)
+                        } else {
+                            Linking.openURL(`smemart://app/product/${remoteMessage.data.slug}`)
+                        }
                     }
                     if (remoteMessage.data.type === 'info' && remoteMessage.data.slug) {
                         console.log('Opening post with slug:', remoteMessage.data.slug);
-                        Linking.openURL(`bbgo://app/post/${remoteMessage.data.slug}`)
+                        Linking.openURL(`smemart://app/post/${remoteMessage.data.slug}`)
                     }
                     if (remoteMessage.data.type === 'order' && remoteMessage.data.slug) {
                         console.log('Opening order with slug:', remoteMessage.data.slug);
-                        Linking.openURL(`bbgo://app/order/${remoteMessage.data.slug}`)
+                        Linking.openURL(`smemart://app/order/${remoteMessage.data.slug}`)
                     }
                     if (remoteMessage.data.type === 'transaction' && remoteMessage.data.slug) {
                         console.log('Transaction notification:', remoteMessage.data.slug);
                         // Có thể mở transaction detail screen nếu có
-                        // Linking.openURL(`bbgo://app/transaction/${remoteMessage.data.slug}`)
+                        // Linking.openURL(`smemart://app/transaction/${remoteMessage.data.slug}`)
                     }
                 }
                 //setInitialRoute(remoteMessage.data.type); // e.g. "Settings"
@@ -111,20 +123,25 @@ export const NotificationListener = () => {
 
         if (remoteMessage.data) {
             if (remoteMessage.data.type === 'product' && remoteMessage.data.slug) {
-                Linking.openURL(`bbgo://app/product/${remoteMessage.data.slug}`)
+                console.log('Opening product with slug:', remoteMessage.data.slug, 'shopId:', remoteMessage.data.shopId);
+                if (remoteMessage.data.shopId) {
+                    Linking.openURL(`smemart://app/product/${remoteMessage.data.slug}?shopId=${remoteMessage.data.shopId}`)
+                } else {
+                    Linking.openURL(`smemart://app/product/${remoteMessage.data.slug}`)
+                }
             }
             if (remoteMessage.data.type === 'info' && remoteMessage.data.slug) {
                 console.log('Opening post with slug:', remoteMessage.data.slug);
-                Linking.openURL(`bbgo://app/post/${remoteMessage.data.slug}`)
+                Linking.openURL(`smemart://app/post/${remoteMessage.data.slug}`)
             }
             if (remoteMessage.data.type === 'order' && remoteMessage.data.slug) {
                 console.log('Opening order with slug:', remoteMessage.data.slug);
-                Linking.openURL(`bbgo://app/order/${remoteMessage.data.slug}`)
+                Linking.openURL(`smemart://app/order/${remoteMessage.data.slug}`)
             }
             if (remoteMessage.data.type === 'transaction' && remoteMessage.data.slug) {
                 console.log('Transaction notification:', remoteMessage.data.slug);
                 // Có thể mở transaction detail screen nếu có
-                // Linking.openURL(`bbgo://app/transaction/${remoteMessage.data.slug}`)
+                // Linking.openURL(`smemart://app/transaction/${remoteMessage.data.slug}`)
             }
         }
     })
