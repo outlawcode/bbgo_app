@@ -1,5 +1,5 @@
 import React, { useEffect, useState} from "react";
-import { RefreshControl, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { RefreshControl, ScrollView, Text, TouchableOpacity, useWindowDimensions, View, ActivityIndicator } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 import CartIcon from "app/screens/Cart/components/cartIcon";
@@ -85,6 +85,7 @@ function PostDetailScreen(props) {
 				.then(function (response) {
 					if(response.status === 200) {
 						console.log('Post found:', response.data);
+						console.log('Related posts:', response.data.relatedPosts);
 						setResult(response.data)
 						setRefresh(false)
 						setLoading(false)
@@ -111,7 +112,7 @@ function PostDetailScreen(props) {
 	}, [refresh, slug])
 
 	return (
-		!result ? <PostDetailLoading /> :
+		!result ? <ActivityIndicator animating={loading} /> :
 		<View style={tw`flex bg-white`}>
 			<ScrollView
 				ref={_scrollView}
@@ -142,38 +143,102 @@ function PostDetailScreen(props) {
 
 					</View>
 
-					<DynamicWebView
-						style={tw`w-full h-full`}
-						source={{
-							html: `<head>
-									<meta name="viewport" content="width=device-width, initial-scale=1">
-									</head>
-									<body>${result.post.content}</body>`,
-						}}
-					/>
+					<View style={tw`w-full mb-4`}>
+						<RenderHtml
+							contentWidth={width}
+							source={{ html: result.post.content }}
+							tagsStyles={{
+								body: {
+									fontFamily: 'System',
+									fontSize: 16,
+									lineHeight: 24,
+									color: '#333333',
+									margin: 0,
+									padding: 0,
+								},
+								p: {
+									marginBottom: 12,
+									marginTop: 12,
+								},
+								img: {
+									maxWidth: '100%',
+									height: 'auto',
+									marginTop: 10,
+									marginBottom: 10,
+								},
+								h1: {
+									fontSize: 24,
+									fontWeight: 'bold',
+									marginBottom: 16,
+									marginTop: 16,
+								},
+								h2: {
+									fontSize: 20,
+									fontWeight: 'bold',
+									marginBottom: 14,
+									marginTop: 14,
+								},
+								h3: {
+									fontSize: 18,
+									fontWeight: 'bold',
+									marginBottom: 12,
+									marginTop: 12,
+								},
+								ul: {
+									marginBottom: 12,
+									marginTop: 12,
+								},
+								ol: {
+									marginBottom: 12,
+									marginTop: 12,
+								},
+								li: {
+									marginBottom: 4,
+								},
+								blockquote: {
+									borderLeftWidth: 4,
+									borderLeftColor: '#008A97',
+									paddingLeft: 16,
+									marginLeft: 0,
+									marginRight: 0,
+									marginTop: 12,
+									marginBottom: 12,
+									fontStyle: 'italic',
+								},
+								a: {
+									color: '#008A97',
+									textDecorationLine: 'underline',
+								},
+								strong: {
+									fontWeight: 'bold',
+								},
+								em: {
+									fontStyle: 'italic',
+								},
+							}}
+							renderersProps={{
+								img: {
+									enableExperimentalPercentWidth: true,
+								},
+							}}
+						/>
+					</View>
 
 					{result && result.relatedPosts && result.relatedPosts.length > 0 &&
-						<View style={tw`bg-white mb-3`}>
+						<View style={tw`bg-white mb-3 mt-4`}>
 							<View style={tw`px-3 pt-3 mb-3`}>
-								<Text  style={tw`uppercase text-gray-600 font-bold`}>Tin tức liên quan</Text>
+								<Text style={tw`uppercase text-gray-600 font-bold text-base`}>Tin tức liên quan</Text>
 							</View>
 
 							<ScrollView
 								horizontal
 								showsHorizontalScrollIndicator={false}
+								contentContainerStyle={tw`px-3 pb-3`}
 							>
 								{result.relatedPosts && result.relatedPosts.map((item, index) => (
 									<NewsItem horizontal item={item} key={index} navigation={props.navigation}/>
 								))}
 							</ScrollView>
-							{/*<FlatGrid
-								itemDimension={180}
-								data={result.relatedPosts}
-								additionalRowStyle={tw`flex items-start`}
-								spacing={10}
-								renderItem={({item}) => (
-									<NewsItem item={item} navigation={props.navigation}/>
-								)} />*/}
 						</View>
 					}
 				</View>

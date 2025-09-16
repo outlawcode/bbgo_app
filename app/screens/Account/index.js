@@ -313,7 +313,7 @@ function AccountScreen(props) {
 				},
 				{
 					id: 21,
-					title: 'Training',
+					title: 'Đào tạo',
 					icon: 'school-outline',
 					link: 'Training',
 					show: [1, 0],

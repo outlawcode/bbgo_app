@@ -14,6 +14,7 @@ import {
 	Linking,
 	Modal,
 	Animated,
+	ActivityIndicator
 } from "react-native";
 import {useDispatch, useSelector} from "react-redux";
 import axios from "axios";
@@ -312,7 +313,7 @@ let contentSource = {};
 	}
 
 	if (!result) {
-		return <ProductDetailLoading />;
+		return <ActivityIndicator animating={refresh} />;
 	}
 
 	return (

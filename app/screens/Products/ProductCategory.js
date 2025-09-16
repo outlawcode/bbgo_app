@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { RefreshControl, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { RefreshControl, ScrollView, StatusBar, Text, TouchableOpacity, View , ActivityIndicator} from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 import CartIcon from "app/screens/Cart/components/cartIcon";
@@ -84,7 +84,7 @@ function ProductCategoryScreen(props) {
 	console.log('products', products);
 
 	return (
-		loading ? <CategoryPageLoading /> :
+		loading ? <ActivityIndicator size="large" />:
 		<View style={tw`flex bg-gray-100 min-h-full`}>
 			<StatusBar barStyle={"light-content"} backgroundColor={'#008A97'} />
 			{category && category.subCategory && category.subCategory.length > 0 &&
