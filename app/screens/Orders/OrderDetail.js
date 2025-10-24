@@ -187,6 +187,25 @@ function OrderDetailScreen(props) {
 		})
 	}
 
+	async function handleVerifyPayment() {
+		const Token = await AsyncStorage.getItem('sme_user_token');
+		axios({
+			method: 'put',
+			url: `${apiConfig.BASE_URL}/member/order/verify/${orderId}`,
+			headers: {Authorization: `Bearer ${Token}`},
+		}).then(function (response) {
+			setRefresh(!refresh);
+			showMessage({
+				message: `Đã cập nhật trạng thái thanh toán #${orderId}`,
+				type: 'success',
+				icon: 'success',
+				duration: 3000,
+			});
+		}).catch(function(error){
+			console.log(error);
+		})
+	}
+
 	return (
 		!result ? <ActivityIndicator /> :
 		<View>
@@ -319,6 +338,16 @@ function OrderDetailScreen(props) {
 												</View>
 											</View>
 										</View>
+										{result && result.paymentVerified === 0 &&
+											<View style={tw`flex items-center`}>
+												<TouchableOpacity
+													onPress={() => handleVerifyPayment()}
+													style={tw`bg-green-500 py-2 px-3 rounded`}
+												>
+													<Text style={tw`text-white`}>Xác nhận thanh toán</Text>
+												</TouchableOpacity>
+											</View>
+										}
 									</View>
 								}
 
