@@ -177,6 +177,13 @@ export function AccountStackScreen() {
 						headerShown: true,
 					}}
 				/>
+				<AccountStack.Screen
+					name={"AffiliateProgram"}
+					component={AffiliateProgramScreen}
+					options={{
+						headerShown: true,
+					}}
+				/>
 				<AccountStack.Screen name={"Products"} component={ProductsScreen} />
 				<AccountStack.Screen name={"ProductDetail"} component={ProductDetailScreen} />
 				<AccountStack.Screen name={"ProductCategory"} component={ProductCategoryScreen} />

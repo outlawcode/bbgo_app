@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from "react";
-import {FlatList, RefreshControl, ScrollView, Text, TouchableOpacity, View} from "react-native";
+import {FlatList, Modal, RefreshControl, ScrollView, Text, TouchableOpacity, View} from "react-native";
 import {useDispatch, useSelector} from "react-redux";
 import tw from "twrnc";
-import {formatVND} from "app/utils/helper";
+import {formatDate, formatVND} from "app/utils/helper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import moment from "moment";
 import axios from "axios";
@@ -10,7 +10,7 @@ import apiConfig from "app/config/api-config";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import TransactionItem from "app/components/TransactionItem";
 import {useIsFocused} from "@react-navigation/native";
-import DatePicker from 'react-native-neat-date-picker'
+// import DatePicker from 'react-native-neat-date-picker'
 import {LoadDataAction} from "app/screens/Auth/action";
 import WithdrawBankScreen from "app/screens/RewardWallet/WithdrawBankScreen";
 import CreateSavingScreen from "app/screens/SavingWallet/CreateSavingScreen";
@@ -24,6 +24,9 @@ function SavingWalletScreen(props) {
 	const [refresh, setRefresh] = useState(false);
 	const [flag, setFlag] = useState(false);
 	const [showDatePicker, setShowDatePicker] = useState(false);
+	const [tempStartDate, setTempStartDate] = useState(null);
+	const [tempEndDate, setTempEndDate] = useState(null);
+	const [currentMonth, setCurrentMonth] = useState(new Date());
 	const [transactions, setTransactions] = useState();
 	const [limit, setLimit] = useState(10);
 	const [page, setPage] = useState(1);
@@ -152,14 +155,6 @@ function SavingWalletScreen(props) {
 								<Text style={tw`font-medium text-gray-500`}>Lịch sử giao dịch ví</Text>
 							</View>
 
-							{/*<DateRangeSelect />*/}
-							{/*<TouchableOpacity
-								style={tw`border border-gray-200 rounded px-3 py-2 flex items-center flex-row`}
-								onPress={() => setShowDatePicker(true)}
-							>
-								<Icon name={"calendar-range-outline"} size={18} style={tw`mr-1`}/>
-								<Text  >{formatDate(dateRange[0])} - {formatDate(dateRange[1])}</Text>
-							</TouchableOpacity>*/}
 						</View>
 						{transactions && transactions.list && transactions.list.length > 0 ?
 							/*<FlatList
@@ -205,12 +200,7 @@ function SavingWalletScreen(props) {
 
 				</View>
 			</ScrollView>
-			<DatePicker
-				isVisible={showDatePicker}
-				mode={'range'}
-				onCancel={() => setShowDatePicker(false)}
-				onConfirm={(start, end) => console.log(start, end)}
-			/>
+			{/* Custom Date Picker Modal */}
 		</View>
 	);
 }

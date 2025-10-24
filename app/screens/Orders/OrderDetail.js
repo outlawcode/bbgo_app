@@ -8,6 +8,7 @@ import {
 	Text,
 	TouchableOpacity,
 	View,
+	Modal,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
@@ -17,11 +18,11 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import apiConfig from "app/config/api-config";
 import { PaymentMethod } from "app/models/commons/order.model";
-import { formatDateTime, formatNumber, formatVND } from "app/utils/helper";
+import {formatBalance, formatDateTime, formatNumber, formatVND} from "app/utils/helper";
 import DynamicWebView from "app/components/DynamicWebView";
 import Clipboard from '@react-native-clipboard/clipboard';
 import { showMessage } from "react-native-flash-message";
-import BottomSheet from 'react-native-gesture-bottom-sheet';
+// import BottomSheet from 'react-native-gesture-bottom-sheet';
 import CanceledOrderForm from "app/screens/Orders/components/CanceledOrderForm";
 import PaymentScreen from "app/screens/Orders/components/PaymentScreen.js";
 
@@ -32,10 +33,10 @@ function OrderDetailScreen(props) {
 	const [refresh, setRefresh] = useState(false);
 	const [showSpinner, setShowSpinner] = useState(true);
 	const [result, setResult] = useState();
+	const [showCancelModal, setShowCancelModal] = useState(false);
 
-	const bottomSheet = useRef();
-	function handleCloseBottomSheet() {
-		bottomSheet.current.close()
+	function handleCloseCancelModal() {
+		setShowCancelModal(false);
 	}
 
 	useEffect(() => {
@@ -246,18 +247,23 @@ function OrderDetailScreen(props) {
 								</View>
 
 								<View style={tw`py-2 border-b border-gray-100`}>
-									<Text>Số tiền thanh toán: <Text
-										style={tw`font-medium text-red-600`}>{result && formatVND(result.order.amount)}</Text></Text>
+									<Text>Tổng tiền đơn hàng: <Text
+										style={tw`font-medium text-blue-500`}>{result && formatVND(result.order.amount)}</Text></Text>
 								</View>
 
-								{result && result.order.paymentMethod === 'Chuyển khoản' && result.order.status === 'Chờ thanh toán' &&
+								<View style={tw`py-2 border-b border-gray-100`}>
+									<Text>Tổng tiền chuyển khoản: <Text
+										style={tw`font-medium text-red-600`}>{result && formatVND(result.transaction.amount)}</Text></Text>
+								</View>
+
+								{result && result.order.paymentNote && result.order.status === 'Chờ thanh toán' &&
 									<View>
 										<Text  style={tw`py-2 mb-2`}>Quý khách vui lòng thanh toán theo thông tin bên dưới:</Text>
 										<View style={tw`mb-5 flex items-center`}>
 											<Image source={{uri: `https://qr.sepay.vn/img?acc=${settings &&
 												settings.bank_account}&bank=${settings &&
 												settings.bank_code}&amount=${
-													result.order.cash
+													result.transaction.amount
 												}&des=${
 													result.order.paymentNote
 												}`}} style={tw`w-32 h-32`} />
@@ -288,9 +294,9 @@ function OrderDetailScreen(props) {
 											<View style={tw`flex flex-row items-center justify-between mb-2`}>
 												<Text>Số tiền</Text>
 												<View>
-													<Text style={tw`font-medium`}>{result && formatVND(result.order.amount)}</Text>
+													<Text style={tw`font-medium`}>{result && formatVND(result.transaction.amount)}</Text>
 													<TouchableOpacity
-														onPress={() => copyToClipboard(result.order.amount)}
+														onPress={() => copyToClipboard(result.transaction.amount)}
 														style={tw`flex flex-row items-center`}
 													>
 														<Icon name="content-copy" style={tw`text-blue-400 mr-1`} />
@@ -373,7 +379,7 @@ function OrderDetailScreen(props) {
 								{Number(result && result.order.point) > 0 && (
 									<View style={tw`pt-2 flex flex-row justify-between`}>
 										<Text>Tổng điểm</Text>
-										<Text style={tw`font-bold text-blue-500`}>{formatNumber(result.order.point)}</Text>
+										<Text style={tw`font-bold text-blue-500`}>{formatBalance(result.order.point)} {settings && settings.point_code}</Text>
 									</View>
 								)}
 
@@ -422,7 +428,7 @@ function OrderDetailScreen(props) {
 						{result && (result.order.status === 'Chờ xác nhận' || result.order.status === 'Chờ thanh toán') &&
 							<View style={tw`flex items-center`}>
 								<TouchableOpacity
-									onPress={() => bottomSheet.current.show()}
+									onPress={() => setShowCancelModal(true)}
 									style={tw`border border-gray-600 px-4 py-2`}
 								>
 									<Text style={tw`text-gray-600`}>Xác nhận Huỷ đơn hàng</Text>
@@ -438,7 +444,7 @@ function OrderDetailScreen(props) {
 								content: <PaymentScreen
 									receiver={receiver}
 									orderId={result.order && result.order.id}
-									amount={result.order && result.order.amount}
+									amount={result.transaction && result.transaction.amount}
 									navigation={props.navigation}
 									backScreen={"OrderDetail"}
 									onRefresh={() => setRefresh(!refresh)}
@@ -465,15 +471,33 @@ function OrderDetailScreen(props) {
 					</View>
 				}
 			</View>
-			<BottomSheet hasDraggableIcon ref={bottomSheet} height={300}>
-				<View
-					style={tw`p-5`}
-				>
-					<CanceledOrderForm
-						onCancel={handleCancelOrder}
-					/>
+			<Modal
+				visible={showCancelModal}
+				animationType="slide"
+				transparent={true}
+				onRequestClose={handleCloseCancelModal}
+			>
+				<View style={tw`flex-1 bg-black bg-opacity-50 justify-center items-center px-4`}>
+					<View style={tw`bg-white rounded-lg w-full max-w-md`}>
+						<View style={tw`p-4 border-b border-gray-200`}>
+							<View style={tw`flex-row justify-between items-center`}>
+								<Text style={tw`text-lg font-bold`}>Huỷ đơn hàng</Text>
+								<TouchableOpacity onPress={handleCloseCancelModal}>
+									<Icon name="close" size={24} style={tw`text-gray-500`} />
+								</TouchableOpacity>
+							</View>
+						</View>
+						<View style={tw`p-4`}>
+							<CanceledOrderForm
+								onCancel={(values) => {
+									handleCancelOrder(values);
+									setShowCancelModal(false);
+								}}
+							/>
+						</View>
+					</View>
 				</View>
-			</BottomSheet>
+			</Modal>
 		</View>
 	);
 }

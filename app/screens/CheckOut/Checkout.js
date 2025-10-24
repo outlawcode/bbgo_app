@@ -29,6 +29,8 @@ function CheckoutScreen(props) {
   const currentUser = useSelector(state => state.memberAuth.user);
   const settings = useSelector(state => state.SettingsReducer.options)
   const [paymentMethod, setPaymentMethod] = useState('Chuyển khoản')
+  
+  // Sử dụng dữ liệu từ API như web thay vì tự tính toán
 
   const [provinceId, setProvinceId] = useState(null);
   const [districtId, setDistrictId] = useState(null);
@@ -118,23 +120,38 @@ function CheckoutScreen(props) {
   ]
 
   async function handleCheckout(values) {
+    // Kiểm tra địa chỉ trước khi submit
+    if (!provinceCode || !districtCode || !wardCode) {
+      showMessage({
+        message: 'Vui lòng chọn đầy đủ Tỉnh/Thành phố, Quận/Huyện và Xã/Phường trước khi đặt hàng.',
+        type: 'warning',
+        icon: 'warning',
+        duration: 4000,
+      });
+      return;
+    }
+
     setLoading(true)
     setShowSpinner(true);
     const token = await AsyncStorage.getItem('sme_user_token');
+    
+    // Chuẩn bị data cho API
+    let orderData = {
+      ...values,
+      orderItems: state.cartItems,
+      paymentMethod,
+      provinceCode,
+      provinceName,
+      districtCode,
+      districtName,
+      wardCode,
+      wardName,
+    };
+    
     return axios({
       method: 'post',
       url: `${apiConfig.BASE_URL}/member/order/create`,
-      data: {
-        ...values,
-        orderItems: state.cartItems,
-        paymentMethod,
-        provinceCode,
-        provinceName,
-        districtCode,
-        districtName,
-        wardCode,
-        wardName,
-      },
+      data: orderData,
       headers: {Authorization: `Bearer ${token}`}
     }).then(function (response) {
       if (response.status === 201) {
@@ -143,11 +160,14 @@ function CheckoutScreen(props) {
         dispatch(emptyCart());
         dispatch(GetMe(token));
         props.navigation.navigate('OrderDetail', {id: response.data.order.id})
+        
+        let successMessage = 'Đặt hàng thành công!';
+        
         showMessage({
-          message: 'Đặt hàng thành công!',
+          message: successMessage,
           type: 'success',
           icon: 'success',
-          duration: 3000,
+          duration: 4000,
         });
       }
     }).catch(function(error){
@@ -229,6 +249,45 @@ function CheckoutScreen(props) {
                               )}
                             </View>
                           )}
+                        </View>
+                      )}
+
+                      {paymentMethod === 'Điểm' && (
+                        <View>
+                          {result && result.paymentInfo && result.paymentInfo.insufficientPoints && (
+                            <View style={tw`mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded`}>
+                              <Text style={tw`text-yellow-700 text-sm`}>
+                                ⚠️ Số dư ví điểm không đủ. Bạn sẽ thanh toán 100% bằng tiền mặt.
+                              </Text>
+                            </View>
+                          )}
+                          
+                          {result && result.paymentAmount && result.paymentAmount.filter(el => el.method !== 'Ví tiết kiệm').length > 0 && (
+                            <View style={tw`p-3 bg-white border border-gray-300 rounded mb-5`}>
+                              <View style={tw`mb-3`}>
+                                <Text style={tw`font-medium`}>💳 Thông tin thanh toán Chuyển khoản + BBX</Text>
+                              </View>
+                              <View>
+                                {result.paymentAmount.filter(el => el.method !== 'Ví tiết kiệm').map((el, index) => (
+                                  <View key={index} style={tw`flex flex-row justify-between border-b border-gray-200 pb-2 mb-2`}>
+                                    <Text style={tw`text-gray-600`}>
+                                      {el.method === 'Chuyển khoản' ? 'Chuyển khoản' : el.method}:
+                                    </Text>
+                                    <Text style={tw`font-medium text-cyan-600`}>{el.amount}</Text>
+                                  </View>
+                                ))}
+                              </View>
+                            </View>
+                          )}
+                        </View>
+                      )}
+
+                      {/* Cảnh báo địa chỉ */}
+                      {(!provinceCode || !districtCode || !wardCode) && (
+                        <View style={tw`mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded`}>
+                          <Text style={tw`text-yellow-700 text-sm text-center`}>
+                            ⚠️ Vui lòng chọn đầy đủ Tỉnh/Thành phố, Quận/Huyện và Xã/Phường
+                          </Text>
                         </View>
                       )}
 
@@ -404,11 +463,13 @@ function CheckoutScreen(props) {
                   </View>
                 </View>
                 <TouchableOpacity
-                  disabled={loading || showSpinner}
-                  style={tw`${loading ? 'bg-gray-500' : 'bg-orange-500'} px-5 py-3 rounded w-full flex items-center justify-between`}
+                  disabled={loading || showSpinner || !provinceCode || !districtCode || !wardCode}
+                  style={tw`${loading || !provinceCode || !districtCode || !wardCode ? 'bg-gray-500' : 'bg-orange-500'} px-5 py-3 rounded w-full flex items-center justify-between`}
                   onPress={handleSubmit}
                 >
-                  <Text style={tw`text-white font-bold uppercase`}>Thanh toán</Text>
+                  <Text style={tw`text-white font-bold uppercase`}>
+                    {!provinceCode || !districtCode || !wardCode ? 'Chọn địa chỉ' : 'Thanh toán'}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </>

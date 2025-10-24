@@ -15,20 +15,24 @@ enableScreens();
 
 // enableLatestRenderer();
 
-// Khởi tạo Firebase trước khi sử dụng
-initializeFirebase().then(success => {
-  if (success) {
-    console.log('Firebase đã được khởi tạo thành công');
-    
-    // Đăng ký handler cho tin nhắn nền sau khi Firebase đã khởi tạo
-    // Sử dụng API mới theo hướng dẫn: https://rnfirebase.io/migrating-to-v22
-    messaging().setBackgroundMessageHandler(async remoteMessage => {
-      console.log('Message handle in the background!', remoteMessage/**/)
-    });
-  } else {
-    console.error('Không thể khởi tạo Firebase, một số tính năng có thể không hoạt động');
-  }
-});
+// Khởi tạo Firebase với delay để tránh xung đột
+setTimeout(() => {
+  initializeFirebase().then(success => {
+    if (success) {
+      console.log('Firebase đã được khởi tạo thành công');
+      
+      // Đăng ký handler cho tin nhắn nền sau khi Firebase đã khởi tạo
+      // Sử dụng API mới theo hướng dẫn: https://rnfirebase.io/migrating-to-v22
+      messaging().setBackgroundMessageHandler(async remoteMessage => {
+        console.log('Message handle in the background!', remoteMessage/**/)
+      });
+    } else {
+      console.error('Không thể khởi tạo Firebase, một số tính năng có thể không hoạt động');
+    }
+  }).catch(error => {
+    console.error('Lỗi khởi tạo Firebase:', error);
+  });
+}, 1000); // Delay 1 giây để app khởi động hoàn toàn
 
 AppRegistry.registerComponent(appName, () => EntryPoint);
 console.log('Component registered successfully');

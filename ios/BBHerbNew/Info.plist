@@ -114,6 +114,13 @@
 				<key>NSIncludesSubdomains</key>
 				<true/>
 			</dict>
+			<key>New Exception Domain 1</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
 			<key>api.</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>

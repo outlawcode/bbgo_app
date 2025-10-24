@@ -744,7 +744,7 @@ let contentSource = {};
 			{currentUser ? (
 				<>
 					{instock > 0 && (
-						<View style={tw`absolute bottom-22 android:bottom-14 bg-white w-full pb-4 pt-2 shadow-lg px-3`}>
+						<View style={tw`absolute bottom-22 android:bottom-22 bg-white w-full pb-4 pt-2 shadow-lg px-3`}>
 							<View style={tw`flex flex-row items-center`}>
 								<TouchableOpacity
 									style={tw`flex flex-col items-center justify-center flex-1 mr-2`}
@@ -774,7 +774,7 @@ let contentSource = {};
 					)}
 				</>
 			) : (
-				<View style={tw`absolute bottom-22 android:bottom-14 bg-white w-full pb-4 pt-2 shadow-lg px-3`}>
+				<View style={tw`absolute bottom-22 android:bottom-22 bg-white w-full pb-4 pt-2 shadow-lg px-3`}>
 					<TouchableOpacity
 						onPress={() => props.navigation.navigate('Login', {
 							return: `/product/${result.product.slug}`

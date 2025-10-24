@@ -22,6 +22,8 @@ import TreeView from "react-native-final-tree-view";
 import QRCode from "react-native-qrcode-svg";
 import Logo from '../../assets/images/logo.png'
 import {GetMe} from "app/screens/Auth/action";
+import DateRangeSelect from "app/components/DateRangeSelect";
+import moment from "moment";
 
 function AffiliateProgramScreen(props) {
 	const dispatch = useDispatch();
@@ -32,6 +34,14 @@ function AffiliateProgramScreen(props) {
 	const [loadingMembers, setLoadingMembers] = useState(false);
 	const [refresh, setRefresh] = useState(false);
 	const [activeTab, setActiveTab] = useState('list'); // 'tree' | 'list'
+	const [availableLevels, setAvailableLevels] = useState([]);
+	const [selectedLevel, setSelectedLevel] = useState(1);
+	const [loadingLevels, setLoadingLevels] = useState(false);
+	const [changingLevel, setChangingLevel] = useState(false);
+	const [dateRange, setDateRange] = useState([
+		moment().startOf('month'),
+		moment().endOf('month')
+	]);
 
 	useEffect(() => {
 		props.navigation.setOptions({
@@ -53,12 +63,81 @@ function AffiliateProgramScreen(props) {
 		})
 	}, [])
 
+	// Load available levels only once
+	useEffect(() => {
+		async function getAvailableLevels() {
+			const Token = await AsyncStorage.getItem('sme_user_token');
+			setLoadingLevels(true)
+			axios({
+				method: 'get',
+				url: `${apiConfig.BASE_URL}/user/system/levels`,
+				headers: {Authorization: `Bearer ${Token}`}
+			}).then(function (response) {
+				if (response.status === 200) {
+					console.log('Available levels:', response.data.levels);
+					setAvailableLevels(response.data.levels);
+					// Set default level to first available level only if not already set
+					if (response.data.levels && response.data.levels.length > 0 && selectedLevel === 1) {
+						setSelectedLevel(response.data.levels[0].level);
+					}
+				}
+				setLoadingLevels(false)
+			}).catch(function(error){
+				console.log('Error loading levels:', error);
+				// Fallback: show basic levels if API fails
+				console.log('Using fallback levels: [1, 2, 3, 4, 5, 6, 7]');
+				setAvailableLevels([
+					{level: 1, count: 0},
+					{level: 2, count: 0},
+					{level: 3, count: 0},
+					{level: 4, count: 0},
+					{level: 5, count: 0},
+					{level: 6, count: 0},
+					{level: 7, count: 0}
+				]);
+				setLoadingLevels(false)
+			})
+		}
+		getAvailableLevels();
+	}, [refresh])
+
+	// Load members when selectedLevel changes
+	useEffect(() => {
+		async function getMemberList() {
+			const Token = await AsyncStorage.getItem('sme_user_token');
+			setLoadingMembers(true)
+			setChangingLevel(true)
+			axios({
+				method: 'get',
+				url: `${apiConfig.BASE_URL}/user/system`,
+				params: { status: 'ALL', level: selectedLevel },
+				headers: {Authorization: `Bearer ${Token}`}
+			}).then(function (response) {
+				if (response.status === 200) {
+					setMembers(response.data);
+				}
+				setLoadingMembers(false)
+				setChangingLevel(false)
+			}).catch(function(error){
+				console.log(error);
+				setLoadingMembers(false)
+				setChangingLevel(false)
+			})
+		}
+		getMemberList();
+	}, [selectedLevel])
+
+	// Load tree data
 	useEffect(() => {
 		async function getUsers() {
 			const Token = await AsyncStorage.getItem('sme_user_token');
 			axios({
 				method: 'get',
 				url: `${apiConfig.BASE_URL}/user/tree`,
+				params: {
+					rangeStart: dateRange[0].format('YYYY-MM-DD'),
+					rangeEnd: dateRange[1].format('YYYY-MM-DD'),
+				},
 				headers: {Authorization: `Bearer ${Token}`}
 			}).then(function (response) {
 				if (response.status === 200) {
@@ -71,27 +150,8 @@ function AffiliateProgramScreen(props) {
 				setRefresh(false)
 			})
 		}
-		async function getMemberList() {
-			const Token = await AsyncStorage.getItem('sme_user_token');
-			setLoadingMembers(true)
-			axios({
-				method: 'get',
-				url: `${apiConfig.BASE_URL}/user/system`,
-				params: { status: 'ALL' },
-				headers: {Authorization: `Bearer ${Token}`}
-			}).then(function (response) {
-				if (response.status === 200) {
-					setMembers(response.data);
-				}
-				setLoadingMembers(false)
-			}).catch(function(error){
-				console.log(error);
-				setLoadingMembers(false)
-			})
-		}
 		getUsers();
-		getMemberList();
-	}, [refresh])
+	}, [refresh, dateRange])
 
 	function handleShare() {
 		let  text = settings && settings.sharing_text ? settings.sharing_text : '';
@@ -142,6 +202,7 @@ function AffiliateProgramScreen(props) {
 					<View style={tw`mx-5 mb-3 bg-white border border-gray-100 p-3 rounded-md`}>
 						<Text style={tw`text-gray-600 text-xs`}>Giới thiệu bạn bè tham gia để nhận thưởng và hoa hồng theo doanh số. Sao chép liên kết hoặc chia sẻ mã QR để bắt đầu.</Text>
 					</View>
+
 					{currentUser && currentUser.refId &&
 						<View>
 							{/* Referral code + Share */}
@@ -166,7 +227,7 @@ function AffiliateProgramScreen(props) {
 									logoSize={20}
 									size={130}
 									logo={Logo}
-									value={`${settings && settings.mk_website_url}/register${currentUser && "?ref=" + currentUser.refId}`}
+									value={`${settings && settings.website_url}/register${currentUser && "?ref=" + currentUser.refId}`}
 								/>
 								<Text style={tw`mt-1 text-xs text-gray-600`}>Mã QR của tôi</Text>
 							</View>
@@ -191,7 +252,25 @@ function AffiliateProgramScreen(props) {
 											<Text style={tw`font-bold mt-1`}>{users && formatNumber(users.countF1)}</Text>
 										</View>
 									</View>
-									<View style={tw`flex-1 bg-white border border-gray-100 p-3 rounded-md ml-1`}>
+									<View style={tw`flex-1 bg-white border border-gray-100 p-3 rounded-md`}>
+										<View style={tw`flex flex-col`}>
+											<View style={tw`flex flex-row items-center`}>
+												<Icon name={"share-variant-outline"} size={22} style={tw`mr-2 text-green-600`} />
+												<Text style={tw`text-gray-700 text-xs`}>Mã giới thiệu</Text>
+											</View>
+											<Text style={tw`font-bold mt-1`}>{currentUser ? currentUser.refId : ''}</Text>
+										</View>
+									</View>
+								</View>
+								{/* Date Range Selector */}
+								<View style={tw`my-3`}>
+									<DateRangeSelect
+										dateRange={dateRange}
+										onSetRange={setDateRange}
+									/>
+								</View>
+								<View style={tw`flex flex-row`}>
+									<View style={tw`flex-1 bg-white border border-gray-100 p-3 rounded-md mr-1`}>
 										<View>
 											<View style={tw`flex flex-row items-center`}>
 												<Icon name={"cash"} size={22} style={tw`mr-2 text-red-600`} />
@@ -200,24 +279,13 @@ function AffiliateProgramScreen(props) {
 											<Text style={tw`font-bold mt-1`}>{users && formatVND(users.personalRevenue)}</Text>
 										</View>
 									</View>
-								</View>
-								<View style={tw`flex flex-row mt-2`}>
-									<View style={tw`flex-1 bg-white border border-gray-100 p-3 rounded-md mr-1`}>
+									<View style={tw`flex-1 bg-white border border-gray-100 p-3 rounded-md`}>
 										<View style={tw`flex flex-col`}>
 											<View style={tw`flex flex-row items-center`}>
 												<Icon name={"account-group-outline"} size={22} style={tw`mr-2 text-cyan-600`} />
 												<Text style={tw`text-gray-700 text-xs`}>Doanh số nhóm</Text>
 											</View>
 											<Text style={tw`font-bold mt-1`}>{users && formatVND(users.groupRevenue)}</Text>
-										</View>
-									</View>
-									<View style={tw`flex-1 bg-white border border-gray-100 p-3 rounded-md ml-1`}>
-										<View style={tw`flex flex-col`}>
-											<View style={tw`flex flex-row items-center`}>
-												<Icon name={"share-variant-outline"} size={22} style={tw`mr-2 text-green-600`} />
-												<Text style={tw`text-gray-700 text-xs`}>Mã giới thiệu</Text>
-											</View>
-											<Text style={tw`font-bold mt-1`}>{currentUser ? currentUser.refId : ''}</Text>
 										</View>
 									</View>
 								</View>
@@ -240,6 +308,54 @@ function AffiliateProgramScreen(props) {
 							</TouchableOpacity>
 						</View>
 					</View>
+
+					{/* Level Selection - only show in list tab and if there are levels */}
+					{activeTab === 'list' && !loadingLevels && availableLevels && availableLevels.length > 0 && (
+						<View style={tw`mx-5 mt-3`}>
+							<Text style={tw`text-gray-700 text-sm font-medium mb-2`}>Chọn cấp độ:</Text>
+							<ScrollView
+								horizontal
+								showsHorizontalScrollIndicator={false}
+								style={tw`mb-3`}
+							>
+								<View style={tw`flex-row`}>
+									{availableLevels.map((levelData) => (
+										<TouchableOpacity
+											key={levelData.level}
+											onPress={() => setSelectedLevel(levelData.level)}
+											style={tw`mr-2 px-4 py-2 rounded-full ${
+												selectedLevel === levelData.level 
+													? 'bg-cyan-600' 
+													: 'bg-gray-100'
+											}`}
+										>
+											<Text style={tw`text-sm font-medium ${
+												selectedLevel === levelData.level 
+													? 'text-white' 
+													: 'text-gray-600'
+											}`}>
+												Level {levelData.level}
+											</Text>
+										</TouchableOpacity>
+									))}
+								</View>
+							</ScrollView>
+						</View>
+					)}
+
+					{/* No levels message - only show in list tab */}
+					{activeTab === 'list' && !loadingLevels && (!availableLevels || availableLevels.length === 0) && (
+						<View style={tw`mx-5 mt-3`}>
+							<View style={tw`bg-yellow-50 border border-yellow-200 rounded-md p-4`}>
+								<View style={tw`flex items-center`}>
+									<Icon name={"account-group"} size={18} style={tw`text-yellow-600 mr-2`} />
+									<Text style={tw`text-yellow-700 text-sm font-medium`}>
+										Bạn chưa có thành viên ở các cấp độ dưới. Hãy mời bạn bè tham gia để xem danh sách thành viên.
+									</Text>
+								</View>
+							</View>
+						</View>
+					)}
 
 					{/* Content per tab */}
 					{activeTab === 'tree' ? (
@@ -267,6 +383,20 @@ function AffiliateProgramScreen(props) {
 						</View>
 					) : (
 						<View style={tw`mx-5 mt-3`}>
+							{/* Level Info */}
+							<View style={tw`bg-cyan-50 border border-cyan-200 rounded-md p-3 mb-3`}>
+								<View style={tw`flex flex-row items-center`}>
+									{changingLevel ? (
+										<ActivityIndicator size="small" style={tw`mr-2`} />
+									) : (
+										<Icon name={"account-group"} size={18} style={tw`text-cyan-600 mr-2`} />
+									)}
+									<Text style={tw`text-cyan-700 text-sm font-medium`}>
+										{changingLevel ? 'Đang tải...' : `Đang xem Level ${selectedLevel} - ${members && members.count} thành viên`}
+									</Text>
+								</View>
+							</View>
+
 							<View style={tw`bg-white border border-gray-200 rounded-md`}>
 								<View style={{maxHeight: 320}}>
 									<ScrollView showsVerticalScrollIndicator={true}>
@@ -284,9 +414,7 @@ function AffiliateProgramScreen(props) {
 															<Text style={tw`text-xs text-gray-600`} numberOfLines={1}>{m.phone}  •  ID: {m.id}</Text>
 														</View>
 														<View style={tw`items-end`}>
-															{m.level ? (
-																<Text style={tw`text-xs text-blue-600 font-semibold`} numberOfLines={1}>Level: {m.level}</Text>
-															) : null}
+															<Text style={tw`text-xs text-blue-600 font-semibold`} numberOfLines={1}>Level: {m.level}</Text>
 															<Text style={tw`text-xs text-gray-600`} numberOfLines={1}>{(m.position || '') + (m.congdoanPosition || '')}</Text>
 															<Text style={tw`text-xs text-gray-500`} numberOfLines={1}>{formatDateTime(m.createdAt)}</Text>
 														</View>
