@@ -30,9 +30,16 @@ function openZalo(zalo) {
 
 const ActionBtn = ({ icon, label, color = '#2563eb', onPress, size = 44 }) => (
   <TouchableOpacity activeOpacity={0.9} onPress={onPress} style={tw`shadow-lg`}>
-    <View style={[tw`rounded-full items-center justify-center`, { width: size, height: size, backgroundColor: color, paddingHorizontal: 10 }]}> 
+    <View style={[tw`rounded-full items-center justify-center`, { width: size, height: size, backgroundColor: color }]}> 
       {label ? (
-        <Text numberOfLines={1} style={[tw`text-white font-bold`, { fontSize: 10 }]}>{label}</Text>
+        <Text
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.6}
+          style={[tw`text-white font-bold`, { fontSize: 12, includeFontPadding: false, textAlign: 'center', textAlignVertical: 'center', width: size - 6 }]}
+        >
+          {label}
+        </Text>
       ) : (
         <Icon name={icon} size={Math.floor(size * 0.5)} style={tw`text-white`} />
       )}
@@ -40,7 +47,7 @@ const ActionBtn = ({ icon, label, color = '#2563eb', onPress, size = 44 }) => (
   </TouchableOpacity>
 );
 
-function FloatingContactFAB({ hotline, zalo, bottom = 90, right = 16 }) {
+function FloatingContactFAB({ hotline, zalo, bottom = Platform.OS === 'android' ? 130 : 90, right = 16 }) {
   const { width, height } = Dimensions.get('window');
   const [expanded, setExpanded] = useState(false);
 

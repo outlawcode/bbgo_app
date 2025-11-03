@@ -12,8 +12,8 @@ export const RecaptchaConfig = {
 }
 
 export const AppConfig = {
-  androidVersion: '1.0.8',
-  iosVersion: '1.0.5'
+  androidVersion: '1.0.10',
+  iosVersion: '1.0.6'
 }
 
 export default ApiConfig;

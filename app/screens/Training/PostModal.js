@@ -5,6 +5,7 @@ import tw from "twrnc";
 import { apiClient } from "app/services/client";
 import DynamicWebView from "app/components/DynamicWebView";
 import WebView from "react-native-webview";
+import { Platform } from 'react-native';
 
 function TrainingPostModal(props) {
 	const { width } = useWindowDimensions();
@@ -74,20 +75,25 @@ function TrainingPostModal(props) {
                             {youtubeId && (
 								<View style={tw`mb-4 overflow-hidden rounded-lg bg-black`}> 
 									<WebView
-                                        style={{ width: width - 32, height: Math.min(Math.round((width - 32) * 9 / 16), 260) }}
-                                        javaScriptEnabled
-                                        domStorageEnabled
-                                        allowsFullscreenVideo
-                                        allowsInlineMediaPlayback
-                                        mediaPlaybackRequiresUserAction={false}
-                                        originWhitelist={["*"]}
-                                        thirdPartyCookiesEnabled
-                                        setSupportMultipleWindows={false}
-                                        userAgent={Platform.select({
-                                            ios: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
-                                            android: 'Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36'
-                                        })}
-                                        source={{ uri: `https://www.youtube-nocookie.com/embed/${youtubeId}?playsinline=1&controls=1&modestbranding=1&rel=0&origin=https%3A%2F%2Fbbgo.vn` }}
+										style={{ width: width - 32, height: Math.min(Math.round((width - 32) * 9 / 16), 260), backgroundColor: 'black' }}
+										javaScriptEnabled
+										domStorageEnabled
+										allowsFullscreenVideo
+										allowsInlineMediaPlayback
+										mediaPlaybackRequiresUserAction={false}
+										originWhitelist={["*"]}
+										thirdPartyCookiesEnabled
+										setSupportMultipleWindows={false}
+										androidLayerType={'hardware'}
+										mixedContentMode={'always'}
+										userAgent={Platform.select({
+											ios: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+											android: 'Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36'
+										})}
+										source={{
+											html: `<!DOCTYPE html><html><head><meta name="viewport" content="width=device-width, initial-scale=1"><style>html,body{margin:0;padding:0;background:#000;height:100%} .wrap{position:relative;padding-top:56.25%;} .player{position:absolute;top:0;left:0;width:100%;height:100%;border:0}</style></head><body><div class="wrap"><iframe class="player" src="https://www.youtube.com/embed/${youtubeId}?playsinline=1&rel=0&modestbranding=1&enablejsapi=1&origin=https://bbgo.vn" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div></body></html>`,
+											baseUrl: 'https://bbgo.vn'
+										}}
 									/>
 								</View>
 							)}
