@@ -15,6 +15,7 @@ import PostDetailScreen from "app/screens/Posts/PostDetail";
 import OrdersScreen from "app/screens/Orders";
 import OrderDetailScreen from "app/screens/Orders/OrderDetail";
 import CheckoutScreen from "app/screens/CheckOut/Checkout.js";
+import ContactScreen from "app/screens/Contact";
 
 const CartStack = createStackNavigator()
 export const CartStackScreen = () => (
@@ -100,5 +101,6 @@ export const CartStackScreen = () => (
 		/>
 		<CartStack.Screen name={"Orders"} component={OrdersScreen}/>
 		<CartStack.Screen name={"OrderDetail"} component={OrderDetailScreen}/>
+		<CartStack.Screen name={"Contact"} component={ContactScreen} options={{ headerShown: true }} />
 	</CartStack.Navigator>
 )

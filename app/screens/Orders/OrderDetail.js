@@ -9,6 +9,8 @@ import {
 	TouchableOpacity,
 	View,
 	Modal,
+	Platform,
+	Dimensions,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
@@ -25,6 +27,7 @@ import { showMessage } from "react-native-flash-message";
 // import BottomSheet from 'react-native-gesture-bottom-sheet';
 import CanceledOrderForm from "app/screens/Orders/components/CanceledOrderForm";
 import PaymentScreen from "app/screens/Orders/components/PaymentScreen.js";
+import { useBottomSafeArea } from "app/utils/safeAreaUtils";
 
 function OrderDetailScreen(props) {
 	const isFocused = useIsFocused();
@@ -34,6 +37,9 @@ function OrderDetailScreen(props) {
 	const [showSpinner, setShowSpinner] = useState(true);
 	const [result, setResult] = useState();
 	const [showCancelModal, setShowCancelModal] = useState(false);
+	
+	// Use proper safe area hook
+	const { bottomWithExtra } = useBottomSafeArea();
 
 	function handleCloseCancelModal() {
 		setShowCancelModal(false);
@@ -338,7 +344,7 @@ function OrderDetailScreen(props) {
 												</View>
 											</View>
 										</View>
-										{result && result.paymentVerified === 0 &&
+										{result && result.order.paymentVerified === 0 &&
 											<View style={tw`flex items-center`}>
 												<TouchableOpacity
 													onPress={() => handleVerifyPayment()}
@@ -467,7 +473,7 @@ function OrderDetailScreen(props) {
 					</View>
 				</ScrollView>
 				{result && (result.order.status === 'Chờ xác nhận') &&
-					<View style={tw`absolute bottom-0 android:bottom-14 bg-white w-full py-3 shadow-lg px-3`}>
+					<View style={[tw`absolute bottom-0 bg-white w-full py-3 shadow-lg px-3`, { paddingBottom: bottomWithExtra }]}>
 						<TouchableOpacity
 							onPress={() => props.navigation.navigate("ModalOverlay", {
 								content: <PaymentScreen
@@ -488,7 +494,7 @@ function OrderDetailScreen(props) {
 					</View>
 				}
 				{result && (result.order.process === 'Đang giao') &&
-					<View style={tw`absolute bottom-0 android:bottom-14 bg-white w-full py-3 shadow-lg px-3`}>
+					<View style={[tw`absolute bottom-0 bg-white w-full py-3 shadow-lg px-3`, { paddingBottom: bottomWithExtra }]}>
 						<TouchableOpacity
 							onPress={() => handleNhanHang()}
 							style={tw`bg-orange-500 flex items-center w-full p-3 rounded`}
@@ -517,12 +523,12 @@ function OrderDetailScreen(props) {
 							</View>
 						</View>
 						<View style={tw`p-4`}>
-							<CanceledOrderForm
+					<CanceledOrderForm
 								onCancel={(values) => {
 									handleCancelOrder(values);
 									setShowCancelModal(false);
 								}}
-							/>
+					/>
 						</View>
 					</View>
 				</View>

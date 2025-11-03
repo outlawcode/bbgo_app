@@ -109,6 +109,16 @@ export const AppTabsScreen = () => {
 	const cartQuantity = useCartQuantity();
 	const insets = useSafeAreaInsets();
 
+	console.log('📱 Bottom Nav Debug:', {
+		platform: Platform.OS,
+		'insets.bottom': insets.bottom,
+		hasGestureNav: insets.bottom > 0,
+		hasSoftwareNav: insets.bottom === 0,
+		calculatedHeight: Platform.OS === 'ios' ? 64 : (insets.bottom === 0 ? 130 : 110),
+		calculatedPadding: Platform.OS === 'ios' 
+			? Math.max(insets.bottom, 10) 
+			: (insets.bottom === 0 ? 70 : Math.max(insets.bottom || 0, 60)),
+	});
 	console.log('Unread notifications:', unreadCount);
 	console.log('Cart quantity:', cartQuantity);
 
@@ -119,8 +129,12 @@ export const AppTabsScreen = () => {
 				tabBarInactiveTintColor: '#9ca3af',
 				headerShown: false,
 				tabBarStyle: {
-					height: (Platform.OS === 'ios' ? 64 : 60) + (insets.bottom ? 4 : 0),
-					paddingBottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 10) : 12,
+			// Dynamic height based on device capabilities
+			// Make bar tall enough to include icon + text + padding
+			height: Platform.OS === 'ios' ? 64 : (insets.bottom === 0 ? 130 : 110),
+			paddingBottom: Platform.OS === 'ios' 
+				? Math.max(insets.bottom, 10) 
+				: (insets.bottom === 0 ? 70 : Math.max(insets.bottom || 0, 60)), // Enough space for system nav bar
 					paddingTop: 8,
 					backgroundColor: 'white',
 					borderTopWidth: 0,
@@ -135,11 +149,10 @@ export const AppTabsScreen = () => {
 				tabBarShowLabel: true,
 				tabBarLabelStyle: {
 					fontSize: 11,
-					marginTop: 2,
-					marginBottom: 0,
+					fontWeight: '500',
+					lineHeight: 12,
 				},
 				tabBarHideOnKeyboard: true,
-				tabBarSafeAreaInsets: { bottom: 0 },
 			}}
 		>
 			<AppTabs.Screen

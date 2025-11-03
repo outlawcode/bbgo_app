@@ -182,11 +182,13 @@ function AffiliateProgramScreen(props) {
 	}
 
 	return (
-		<View style={tw`bg-white h-full`}>
+		<View style={tw`bg-white flex-1`}>
 			<ScrollView
-				style={tw`pb-20`}
+				style={tw`flex-1`}
+				contentContainerStyle={tw`pb-20`}
 				scrollEnabled={true}
-				showsVerticalScrollIndicator={false}
+				showsVerticalScrollIndicator={true}
+				nestedScrollEnabled={true}
 				refreshControl={
 					<RefreshControl
 						refreshing={refresh}
@@ -398,34 +400,30 @@ function AffiliateProgramScreen(props) {
 							</View>
 
 							<View style={tw`bg-white border border-gray-200 rounded-md`}>
-								<View style={{maxHeight: 320}}>
-									<ScrollView showsVerticalScrollIndicator={true}>
-										{loadingMembers ? (
-											<View style={tw`px-3 py-4`}><ActivityIndicator /></View>
-										) : members && members.list && members.list.length > 0 ? (
-											members.list.map((m, idx) => (
-												<View key={m.id || idx} style={tw`px-3 py-3 ${idx !== members.list.length - 1 && 'border-b border-gray-100'}`}>
-													<View style={tw`flex flex-row items-center`}>
-														<View style={tw`w-9 h-9 rounded-full bg-gray-100 items-center justify-center mr-3`}>
-															<Icon name={"account-circle-outline"} size={20} style={tw`text-gray-500`} />
-														</View>
-														<View style={tw`flex-1`}>
-															<Text style={tw`text-gray-900 font-medium`} numberOfLines={1}>{m.name}</Text>
-															<Text style={tw`text-xs text-gray-600`} numberOfLines={1}>{m.phone}  •  ID: {m.id}</Text>
-														</View>
-														<View style={tw`items-end`}>
-															<Text style={tw`text-xs text-blue-600 font-semibold`} numberOfLines={1}>Level: {m.level}</Text>
-															<Text style={tw`text-xs text-gray-600`} numberOfLines={1}>{(m.position || '') + (m.congdoanPosition || '')}</Text>
-															<Text style={tw`text-xs text-gray-500`} numberOfLines={1}>{formatDateTime(m.createdAt)}</Text>
-														</View>
-													</View>
+								{loadingMembers ? (
+									<View style={tw`px-3 py-4`}><ActivityIndicator /></View>
+								) : members && members.list && members.list.length > 0 ? (
+									members.list.map((m, idx) => (
+										<View key={m.id || idx} style={tw`px-3 py-3 ${idx !== members.list.length - 1 && 'border-b border-gray-100'}`}>
+											<View style={tw`flex flex-row items-center`}>
+												<View style={tw`w-9 h-9 rounded-full bg-gray-100 items-center justify-center mr-3`}>
+													<Icon name={"account-circle-outline"} size={20} style={tw`text-gray-500`} />
 												</View>
-											))
-										) : (
-											<View style={tw`px-3 py-4`}><Text style={tw`text-gray-600`}>Không có dữ liệu</Text></View>
-										)}
-									</ScrollView>
-								</View>
+												<View style={tw`flex-1`}>
+													<Text style={tw`text-gray-900 font-medium`} numberOfLines={1}>{m.name}</Text>
+													<Text style={tw`text-xs text-gray-600`} numberOfLines={1}>{m.phone}  •  ID: {m.id}</Text>
+												</View>
+												<View style={tw`items-end`}>
+													<Text style={tw`text-xs text-blue-600 font-semibold`} numberOfLines={1}>Level: {m.level}</Text>
+													<Text style={tw`text-xs text-gray-600`} numberOfLines={1}>{(m.position || '') + (m.congdoanPosition || '')}</Text>
+													<Text style={tw`text-xs text-gray-500`} numberOfLines={1}>{formatDateTime(m.createdAt)}</Text>
+												</View>
+											</View>
+										</View>
+									))
+								) : (
+									<View style={tw`px-3 py-4`}><Text style={tw`text-gray-600`}>Không có dữ liệu</Text></View>
+								)}
 							</View>
 						</View>
 					)}

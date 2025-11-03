@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Modal, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 import { apiClient } from "app/services/client";
 import DynamicWebView from "app/components/DynamicWebView";
+import WebView from "react-native-webview";
 
 function TrainingPostModal(props) {
 	const { width } = useWindowDimensions();
@@ -23,6 +24,28 @@ function TrainingPostModal(props) {
 		}
 		fetchPost()
 	}, [slug])
+
+	// Try to detect video url on post from several likely fields
+	const videoUrl = useMemo(() => {
+		if (!post) return undefined;
+		return post.videoLink || post.videoUrl || post.youtube || post.youtubeUrl || post.video;
+	}, [post]);
+
+	const youtubeId = useMemo(() => {
+		if (!videoUrl) return undefined;
+		// Support: https://www.youtube.com/watch?v=ID, youtu.be/ID, embed/ID, shorts/ID
+		const patterns = [
+			/[?&]v=([^&#]+)/, // watch?v=
+			/https?:\/\/youtu\.be\/([^?&#/]+)/,
+			/\/embed\/([^?&#/]+)/,
+			/\/shorts\/([^?&#/]+)/,
+		];
+		for (const p of patterns) {
+			const m = String(videoUrl).match(p);
+			if (m && m[1]) return m[1];
+		}
+		return undefined;
+	}, [videoUrl]);
 
 	const close = () => {
 		setVisible(false)
@@ -47,6 +70,29 @@ function TrainingPostModal(props) {
 
 					<ScrollView showsVerticalScrollIndicator={false}>
 						<View style={tw`px-4 py-3`}>
+							{/* YouTube Player */}
+                            {youtubeId && (
+								<View style={tw`mb-4 overflow-hidden rounded-lg bg-black`}> 
+									<WebView
+                                        style={{ width: width - 32, height: Math.min(Math.round((width - 32) * 9 / 16), 260) }}
+                                        javaScriptEnabled
+                                        domStorageEnabled
+                                        allowsFullscreenVideo
+                                        allowsInlineMediaPlayback
+                                        mediaPlaybackRequiresUserAction={false}
+                                        originWhitelist={["*"]}
+                                        thirdPartyCookiesEnabled
+                                        setSupportMultipleWindows={false}
+                                        userAgent={Platform.select({
+                                            ios: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+                                            android: 'Mozilla/5.0 (Linux; Android 13; Mobile) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Mobile Safari/537.36'
+                                        })}
+                                        source={{ uri: `https://www.youtube-nocookie.com/embed/${youtubeId}?playsinline=1&controls=1&modestbranding=1&rel=0&origin=https%3A%2F%2Fbbgo.vn` }}
+									/>
+								</View>
+							)}
+
+							{/* Post Content */}
 							{post?.content ? (
 								<DynamicWebView
 									style={tw`w-full h-full`}

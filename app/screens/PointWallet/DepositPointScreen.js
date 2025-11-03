@@ -29,7 +29,7 @@ function DepositPointScreen(props) {
 			{headers: {Authorization: `Bearer ${token}`}})
 			.then((response) => {
 			showMessage({
-				message: 'Đã tạo giao dịch nạp điểm, vui lòng thanh toán!',
+				message: 'Đã tạo giao dịch yêu cầu nạp điểm.',
 				type: 'success',
 				icon: 'success',
 				duration: 3000,
@@ -72,12 +72,6 @@ function DepositPointScreen(props) {
 						keyboardShouldPersistTaps={"handled"}
 					>
 						<View style={tw`pb-32`}>
-							<View style={tw`mt-5 mb-3 mx-3`}>
-								<View style={tw`bg-cyan-50 rounded p-3 relative`}>
-									<Icon name={"help-circle"} size={20} style={tw`text-cyan-700 absolute -top-2 -left-2`}/>
-									<Text style={tw`text-cyan-700`}>Tạo giao dịch nạp điểm sau đó kết nối ví và thanh toán</Text>
-								</View>
-							</View>
 							<View style={tw`px-3 py-5 my-3 bg-white`}>
 								<View style={tw`mb-4`}>
 									<Text style={tw`mb-1 font-medium text-gray-700`}>Số điểm</Text>

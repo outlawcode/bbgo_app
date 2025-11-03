@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {ScrollView, Text, TouchableOpacity, View} from "react-native";
+import {ScrollView, Text, TouchableOpacity, View, Platform, Dimensions} from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 import {displayNumber, formatVND} from "app/utils/helper";
@@ -16,6 +16,7 @@ import {emptyCart} from "app/screens/Cart/action.js";
 import {GetMe} from "app/screens/Auth/action.js";
 import Spinner from "react-native-loading-spinner-overlay";
 import AddressFields from "app/components/AddressFields";
+import { useBottomSafeArea } from "app/utils/safeAreaUtils";
 
 function CheckoutScreen(props) {
   const dispatch = useDispatch();
@@ -41,6 +42,9 @@ function CheckoutScreen(props) {
   const [districtName, setDistrictName] = useState(currentUser && currentUser.districtName || '');
   const [wardCode, setWardCode] = useState(currentUser && currentUser.wardCode || null);
   const [wardName, setWardName] = useState(currentUser && currentUser.wardName || '');
+
+  // Use proper safe area hook
+  const { bottomWithExtra } = useBottomSafeArea();
 
   useEffect(() => {
     props.navigation.setOptions({
@@ -203,7 +207,7 @@ function CheckoutScreen(props) {
                 overScrollMode={'never'}
                 scrollEventThrottle={16}
               >
-                <View style={tw`pb-52`}>
+                <View style={[tw`pb-72`, { paddingBottom: Platform.OS === 'android' ? 300 : 120 }]}>
                   <KeyboardAwareScrollView>
                     <View style={tw`bg-white p-3 mb-3`}>
                       <View style={tw`mb-3`}>
@@ -393,7 +397,7 @@ function CheckoutScreen(props) {
                 </View>
               </ScrollView>
 
-              <View style={tw`absolute bottom-0 android:bottom-14 bg-white w-full pb-5 pt-1 shadow-lg px-3`}>
+              <View style={[tw`absolute bottom-18 bg-white w-full pt-1 shadow-lg px-3`, { paddingBottom: Platform.OS === 'android' ? 56 : 10 }]}>
                 <View style={tw`mb-2`}>
                   <View style={tw`flex items-center content-center`}>
                     <TouchableOpacity

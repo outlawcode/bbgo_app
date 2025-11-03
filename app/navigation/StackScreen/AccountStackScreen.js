@@ -30,6 +30,8 @@ import TrainingCategoryScreen from "app/screens/Training/Category";
 import TrainingPostModal from "app/screens/Training/PostModal";
 import SavingWalletScreen from "app/screens/SavingWallet";
 import PointWalletScreen from "app/screens/PointWallet";
+import MemberGroupsScreen from "app/screens/Groups/MemberGroups";
+import MemberGroupDetailScreen from "app/screens/Groups/MemberGroupDetail";
 
 const AccountStack = createStackNavigator()
 
@@ -67,6 +69,20 @@ export function AccountStackScreen() {
 				<AccountStack.Screen
 					name={"Training"}
 					component={TrainingScreen}
+					options={{
+						headerShown: true,
+					}}
+				/>
+				<AccountStack.Screen
+					name={"MemberGroups"}
+					component={MemberGroupsScreen}
+					options={{
+						headerShown: true,
+					}}
+				/>
+				<AccountStack.Screen
+					name={"MemberGroupDetail"}
+					component={MemberGroupDetailScreen}
 					options={{
 						headerShown: true,
 					}}

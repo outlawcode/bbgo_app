@@ -46,6 +46,11 @@ const DynamicHeightWebView = (props) => {
 		}}
 		automaticallyAdjustContentInsets={false}
 		scrollEnabled={true} // Enable scrolling within WebView for content
+		originWhitelist={["*"]}
+		setSupportMultipleWindows={false}
+		allowsFullscreenVideo={true}
+		allowsInlineMediaPlayback={true}
+		mediaPlaybackRequiresUserAction={false}
 		onMessage={event => {
 			const newHeight = parseInt(event.nativeEvent.data);
 			if (newHeight > 0 && newHeight > height) {
@@ -75,7 +80,6 @@ const DynamicHeightWebView = (props) => {
 				androidLayerType: 'hardware',
 				mixedContentMode: 'compatibility',
 				thirdPartyCookiesEnabled: true,
-				allowsInlineMediaPlayback: true,
 				nestedScrollEnabled: true, // Enable nested scrolling for better Android experience
 			}
 		})}

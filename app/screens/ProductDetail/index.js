@@ -28,6 +28,7 @@ import {addToCart} from "app/screens/Cart/action";
 import {showMessage} from "react-native-flash-message";
 import CartIcon from "app/screens/Cart/components/cartIcon";
 import ProductDetailLoading from "app/screens/ProductDetail/components/ProductDetailLoading";
+import { useBottomSafeArea } from "app/utils/safeAreaUtils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ProductGallery from "app/screens/ProductDetail/components/ProductGallery";
 import RenderHtml from "react-native-render-html";
@@ -57,6 +58,9 @@ const [reviewPhone, setReviewPhone] = useState('');
 	const [modalQuantity, setModalQuantity] = useState(1);
 	const [modalAction, setModalAction] = useState(''); // 'addToCart' or 'buyNow'
 	const slideAnim = useRef(new Animated.Value(300)).current;
+
+	// Use proper safe area hook
+	const { bottomWithExtra } = useBottomSafeArea();
 
 	const settings = useSelector(state => state.SettingsReducer.options);
 	const currentUser = useSelector(state => state.memberAuth.user);
@@ -744,7 +748,7 @@ let contentSource = {};
 			{currentUser ? (
 				<>
 					{instock > 0 && (
-						<View style={tw`absolute bottom-22 android:bottom-22 bg-white w-full pb-4 pt-2 shadow-lg px-3`}>
+						<View style={[tw`absolute bottom-22 bg-white w-full pt-2 shadow-lg px-3`, { paddingBottom: Platform.OS === 'android' ? 16 : 10 }]}>
 							<View style={tw`flex flex-row items-center`}>
 								<TouchableOpacity
 									style={tw`flex flex-col items-center justify-center flex-1 mr-2`}
@@ -774,7 +778,7 @@ let contentSource = {};
 					)}
 				</>
 			) : (
-				<View style={tw`absolute bottom-22 android:bottom-22 bg-white w-full pb-4 pt-2 shadow-lg px-3`}>
+						<View style={[tw`absolute bottom-22 bg-white w-full pt-2 shadow-lg px-3`, { paddingBottom: Platform.OS === 'android' ? 16 : 10 }]}>
 					<TouchableOpacity
 						onPress={() => props.navigation.navigate('Login', {
 							return: `/product/${result.product.slug}`

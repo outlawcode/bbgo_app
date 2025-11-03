@@ -318,6 +318,13 @@ function AccountScreen(props) {
 					link: 'Training',
 					show: [1, 0],
 				},
+					{
+						id: 22,
+						title: 'Nhóm của tôi',
+						icon: 'account-group',
+						link: 'MemberGroups',
+						show: [1, 0],
+					},
 			]
 		},
 	]

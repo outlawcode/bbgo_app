@@ -8,6 +8,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import apiConfig from "app/config/api-config";
 import {showMessage} from "react-native-flash-message";
+import { useBottomSafeArea } from "app/utils/safeAreaUtils";
 
 function PaymentScreen(props) {
   const {navigation, orderId, backScreen, amount, receiver, onRefresh} = props;
@@ -15,6 +16,9 @@ function PaymentScreen(props) {
   const currentUser = useSelector(state => state.memberAuth.user);
   const settings = useSelector(state => state.SettingsReducer.options);
   const [loading, setLoading] = useState(false)
+  
+  // Use proper safe area hook
+  const { bottomWithExtra } = useBottomSafeArea();
   
   // Tính toán BBX và số tiền còn lại
   const calculateBBXPayment = () => {
@@ -51,12 +55,12 @@ function PaymentScreen(props) {
     
     // Chuẩn bị data cho API
     let paymentData = {
-      name: receiver && receiver.name,
-      email: receiver && receiver.email,
-      phone: receiver && receiver.phone,
-      address: receiver && receiver.address,
-      orderIds: JSON.stringify([orderId]),
-      paymentMethod
+        name: receiver && receiver.name,
+        email: receiver && receiver.email,
+        phone: receiver && receiver.phone,
+        address: receiver && receiver.address,
+        orderIds: JSON.stringify([orderId]),
+        paymentMethod
     };
     
     // Nếu là phương thức Chuyển khoản + BBX, thêm thông tin BBX
@@ -214,7 +218,7 @@ function PaymentScreen(props) {
             </View>
           </TouchableOpacity>
         </View>
-        <View style={tw`absolute bottom-0 bg-white w-full pb-10 pt-3 shadow-lg px-3`}>
+        <View style={[tw`absolute bottom-0 bg-white w-full pb-10 pt-3 shadow-lg px-3`, { paddingBottom: bottomWithExtra }]}>
           <View style={tw`flex items-center justify-between flex-row`}>
             <TouchableOpacity
               disabled={loading || (paymentMethod === 'BankTransferBBX' && bbxCalculation.bbxToUse === 0)}

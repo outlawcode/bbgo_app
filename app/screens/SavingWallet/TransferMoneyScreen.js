@@ -18,10 +18,11 @@ function TransferMoneyScreen(props) {
 	const currentUser = useSelector(state => state.memberAuth.user);
 	const [cashAmount, setCashAmount] = useState(null);
 	const [disabled, setDisabled] = useState(false)
+  const isPointWallet = props.wallet === 'Ví điểm' || props.wallet === 'pointWallet' || props.wallet === 'BBX' || props.wallet === 'point_wallet';
 
 	const InvestmentSchema = Yup.object().shape({})
 
-	async function handleCreateInvest(values) {
+  async function handleCreateInvest(values) {
 		setDisabled(true)
 		const token = await AsyncStorage.getItem('sme_user_token');
 		axios.post(apiConfig.BASE_URL+'/member/transactions/send-money', {
@@ -33,8 +34,8 @@ function TransferMoneyScreen(props) {
 			},
 			{headers: {Authorization: `Bearer ${token}`}})
 			.then((response) => {
-			showMessage({
-				message: `Đã thực hiện chuyển tiền từ ${props.wallet} sang tài khoản ${values.phone}`,
+      showMessage({
+        message: `Đã thực hiện chuyển ${isPointWallet ? 'BBX' : 'tiền'} từ ${props.wallet} sang tài khoản ${values.phone}`,
 				type: 'success',
 				icon: 'success',
 				duration: 3000,
@@ -52,22 +53,22 @@ function TransferMoneyScreen(props) {
 		})
 	}
 
-	if (currentUser) {
+  if (currentUser) {
 		var initialValues = {
-			content: 'Chuyển tiền'
+      content: isPointWallet ? 'Chuyển BBX' : 'Chuyển tiền'
 		}
 	}
 
 	return (
 		<View>
-			<View style={tw`bg-white ios:pt-14 android:pt-14 pb-4 flex-row items-center`}>
+      <View style={tw`bg-white ios:pt-14 android:pt-14 pb-4 flex-row items-center`}>
 				<TouchableOpacity
 					onPress={() => props.navigation.navigate(props.backScreen)}
 					style={tw`mr-3 ml-3`}
 				>
 					<Icon name="close" size={26}/>
 				</TouchableOpacity>
-				<Text  style={tw`font-medium uppercase`}>Chuyển tiền tới thành viên khác</Text>
+        <Text  style={tw`font-medium uppercase`}>{isPointWallet ? 'Chuyển BBX tới thành viên khác' : 'Chuyển tiền tới thành viên khác'}</Text>
 			</View>
 			<Formik
 				initialValues={initialValues}
@@ -80,25 +81,22 @@ function TransferMoneyScreen(props) {
 					>
 						<View style={tw`pb-32`}>
 							<View style={tw`px-3 py-5 my-3 bg-white`}>
-								<View style={tw`mb-4`}>
-									<Text style={tw`mb-1 font-medium text-gray-700`}>Số tiền</Text>
-									<CurrencyInput
-										value={cashAmount}
-										onChangeValue={setCashAmount}
-										suffix="đ"
-										delimiter=","
-										separator="."
-										precision={0}
-										minValue={0}
-										onChangeText={(formattedValue) => {
-											console.log(formattedValue); // R$ +2.310,46
-										}}
-										style={tw`border border-gray-300 p-3 rounded text-base`}
-									/>
-									<View style={tw`mt-1`}>
-										<Text style={tw`text-xs text-gray-500`}>Khả dụng: {formatVND(props.balance)}</Text>
-									</View>
-								</View>
+                <View style={tw`mb-4`}>
+                  <Text style={tw`mb-1 font-medium text-gray-700`}>{isPointWallet ? 'Số BBX' : 'Số tiền'}</Text>
+                  <CurrencyInput
+                    value={cashAmount}
+                    onChangeValue={setCashAmount}
+                    suffix={isPointWallet ? ' BBX' : 'đ'}
+                    delimiter="," 
+                    separator={isPointWallet ? "," : "."}
+                    precision={0}
+                    minValue={0}
+                    style={tw`border border-gray-300 p-3 rounded text-base`}
+                  />
+                  <View style={tw`mt-1`}>
+                    <Text style={tw`text-xs text-gray-500`}>Khả dụng: {isPointWallet ? `${props.balance} BBX` : formatVND(props.balance)}</Text>
+                  </View>
+                </View>
 
 								<Field
 									component={CustomInput}

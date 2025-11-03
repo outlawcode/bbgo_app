@@ -25,43 +25,57 @@ function TransactionDetailScreen(props) {
 	const [disabled, setDisabled] = useState(false);
 
 	const {signer, open, isConnected, provider, address} =
-		useWalletConnectModal();
+		useWalletConnectModal({
+			projectId: 'b5adb2e19ab2dd031b96956954f8cc6c',
+		});
 
 	const connect = async () => {
 		try {
 			setConnecting(true);
-			console.log('Starting connection process...');
+			console.log('🚀 === Starting connection process ===');
+			console.log('📱 Platform: iOS');
+			console.log('🔗 isConnected:', isConnected);
+			console.log('📦 provider:', provider ? 'exists' : 'null');
+			console.log('🔑 open function:', open ? 'exists' : 'null');
 
 			// Only try to disconnect if we have an active session
 			if (provider && isConnected) {
 				try {
-					console.log('Disconnecting active session');
+					console.log('🔌 Disconnecting active session');
 					await provider.disconnect();
-					console.log('Disconnected existing session');
+					console.log('✅ Disconnected existing session');
 					// Wait for disconnect to complete
 					await new Promise(resolve => setTimeout(resolve, 1000));
 				} catch (disconnectError) {
-					console.log('Disconnect error:', disconnectError);
+					console.log('⚠️ Disconnect error:', disconnectError);
 					// Continue anyway even if disconnect fails
 				}
 			} else {
-				console.log('No active session to disconnect');
+				console.log('ℹ️ No active session to disconnect');
 			}
 
-			console.log('Opening wallet selector...');
+			console.log('🎯 Opening wallet selector...');
 
+			// Check if open function exists
+			if (!open) {
+				throw new Error('open function is not available. Make sure WalletConnectModal is properly initialized.');
+			}
+
+			// For iOS, try to open with explicit options
+			console.log('📱 Attempting to open modal on iOS...');
+			
 			// Directly open the wallet selector
-			await open();
+			const result = await open();
 
-			console.log('Wallet selector opened');
+			console.log('✅ Wallet selector opened, result:', result);
 
 			// Monitor connection status with longer timeout
 			const connectionTimer = setTimeout(() => {
 				if (!isConnected && connecting) {
-					console.log('Connection timeout');
+					console.log('⏱️ Connection timeout');
 					setConnecting(false);
 					showMessage({
-						message: 'Kết nối ví MetaMask bị hết thời gian. Vui lòng thử lại.',
+						message: 'Kết nối ví bị hết thời gian. Vui lòng thử lại.',
 						type: 'warning',
 						icon: 'warning',
 						duration: 3000,
@@ -71,13 +85,16 @@ function TransactionDetailScreen(props) {
 
 			return () => clearTimeout(connectionTimer);
 		} catch (e) {
-			console.error('Connection error:', e);
+			console.error('❌ === Connection error ===');
+			console.error('💥 Error message:', e.message);
+			console.error('📍 Error stack:', e.stack);
+			console.error('🔍 Full error:', JSON.stringify(e, null, 2));
 			setConnecting(false);
 			showMessage({
 				message: 'Không thể kết nối ví: ' + (e.message || 'Lỗi không xác định'),
 				type: 'danger',
 				icon: 'danger',
-				duration: 3000,
+				duration: 5000,
 			});
 		}
 	};
@@ -344,71 +361,6 @@ function TransactionDetailScreen(props) {
 					/>
 				}
 			>
-				{transactionInfo && transactionInfo.transaction.status === 'Chờ thanh toán' && transactionInfo.transaction.type === 'Nạp điểm' &&
-					<View style={tw`mb-5 bg-white px-3 pb-3`}>
-						<View style={tw`mt-3 flex flex-row items-center`}>
-							<Icon name={"wallet"} size={20} style={tw`text-yellow-400 mr-1`} />
-							<Text style={tw`text-gray-500`}>Vui lòng kết nối ví và thanh toán giao dịch</Text>
-						</View>
-
-
-						{(loading || connecting) && (
-							<View style={tw`p-2 mb-3 bg-yellow-50 rounded`}>
-								<Text style={tw`text-yellow-800`}>
-									{connecting ? 'Đang kết nối ví...' : 'Đang xử lý giao dịch...'}
-								</Text>
-							</View>
-						)}
-
-						<TouchableOpacity
-							key={`connect-button-${isConnected ? 'connected' : 'disconnected'}-${connecting ? 'connecting' : 'idle'}`}
-							disabled={loading || connecting}
-							style={tw`bg-green-600 px-5 py-4 mt-3 rounded w-full flex items-center justify-between ${(loading || connecting) ? 'opacity-70' : ''}`}
-							onPress={async () => {
-								console.log('Button pressed, isConnected:', isConnected);
-
-								if (!isConnected) {
-									console.log('Initiating wallet connection');
-									await connect();
-								} else {
-									console.log('Submitting form');
-									handlePayment();
-								}
-							}}
-						>
-							<Text style={tw`text-white font-bold uppercase`}>
-								{!isConnected
-									? (connecting ? 'Đang kết nối...' : 'Kết nối ví')
-									: 'Xác nhận'}
-							</Text>
-						</TouchableOpacity>
-						{isConnected && (
-							<View
-								style={tw`flex items-center justify-between mt-5 flex-row bg-gray-700 p-2 rounded`}
-							>
-								<View style={tw`flex items-center flex-row`}>
-									<Icon name="wallet"
-										  size={24}
-										  style={tw`text-white mr-3`}
-									/>
-									<View>
-										<Text style={tw`text-gray-400`}>Đã kết nối</Text>
-										<Text style={tw`text-white font-medium text-base`}>{formatAddress(address)}</Text>
-									</View>
-								</View>
-
-								<TouchableOpacity
-									style={tw`bg-red-500 rounded flex items-center justify-between p-2`}
-									onPress={disconnect}
-								>
-									<Text style={tw`text-white font-bold uppercase`}>
-										Ngắt kết nối
-									</Text>
-								</TouchableOpacity>
-							</View>
-						)}
-					</View>
-				}
 				<View style={tw`mb-10 bg-white`}>
 					{transactionInfo.transaction.amount > 0 &&
 						<View style={tw`flex items-center justify-between flex-row px-3 py-3 border-b border-gray-200`}>

@@ -1,5 +1,5 @@
 import * as React from "react";
-import {createNavigationContainerRef, NavigationContainer} from "@react-navigation/native";
+import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "react-native";
 import { RootStackScreen } from "app/navigation/StackScreen/RootStackScreen";
 import DrawerScreen from "app/navigation/StackScreen/Drawer";
@@ -44,7 +44,6 @@ const App = (props) => {
 	const { theme } = props;
 
 	const [isReady, setReady] = React.useState(false);
-	const navigationRef = createNavigationContainerRef();
 
 	return (
 		<NavigationContainer theme={theme} ref={navigationRef} linking={linking}>

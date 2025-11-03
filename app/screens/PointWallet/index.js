@@ -14,6 +14,7 @@ import {LoadDataAction} from "app/screens/Auth/action";
 import WithdrawBankScreen from "app/screens/RewardWallet/WithdrawBankScreen";
 import DepositPointScreen from "app/screens/PointWallet/DepositPointScreen";
 import ClaimPointScreen from "app/screens/PointWallet/ClaimPointScreen";
+import TransferMoneyScreen from "../SavingWallet/TransferMoneyScreen";
 
 function PointWalletScreen(props) {
 	const isFocused = useIsFocused();
@@ -114,15 +115,16 @@ function PointWalletScreen(props) {
 					<TouchableOpacity
 						style={tw`flex flex-row items-center`}
 						onPress={() => props.navigation.navigate('Modal', {
-							content: <ClaimPointScreen
+							content: <TransferMoneyScreen
 								navigation={props.navigation}
 								backScreen={'PointWallet'}
+								wallet={'Ví điểm'}
 								balance={currentUser && currentUser.pointWallet}
 							/>
 						})}
 					>
 						<Icon name={"tray-arrow-up"} size={24} style={tw`text-white mr-1`} />
-						<Text style={tw`text-white`}>Rút điểm</Text>
+						<Text style={tw`text-white`}>Chuyển điểm</Text>
 					</TouchableOpacity>
 				</View>
 			</View>

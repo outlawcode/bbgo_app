@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, Modal, Platform, ScrollView, Alert } from "react-native";
-import RNPickerSelect from 'react-native-picker-select';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from "moment";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -181,25 +180,29 @@ function DateRangeSelect(props) {
 									{/* Start Date */}
 									<View style={tw`flex-1 mr-2`}>
 										<Text style={tw`text-xs text-gray-500 mb-1`}>Từ ngày:</Text>
-										<DateTimePicker
-											value={tempStartDate.toDate()}
-											mode="date"
-											display="default"
-											onChange={handleStartDateChange}
-											style={tw`w-full`}
-										/>
+										<TouchableOpacity
+											style={tw`bg-gray-50 border border-gray-300 rounded-md p-3 flex-row items-center justify-between`}
+											onPress={() => setShowStartDatePicker(true)}
+										>
+											<Text style={tw`text-sm text-gray-900`}>
+												{tempStartDate.format('DD/MM/YYYY')}
+											</Text>
+											<Icon name="calendar" size={16} style={tw`text-gray-400`} />
+										</TouchableOpacity>
 									</View>
 
 									{/* End Date */}
 									<View style={tw`flex-1 ml-2`}>
 										<Text style={tw`text-xs text-gray-500 mb-1`}>Đến ngày:</Text>
-										<DateTimePicker
-											value={tempEndDate.toDate()}
-											mode="date"
-											display="default"
-											onChange={handleEndDateChange}
-											style={tw`w-full`}
-										/>
+										<TouchableOpacity
+											style={tw`bg-gray-50 border border-gray-300 rounded-md p-3 flex-row items-center justify-between`}
+											onPress={() => setShowEndDatePicker(true)}
+										>
+											<Text style={tw`text-sm text-gray-900`}>
+												{tempEndDate.format('DD/MM/YYYY')}
+											</Text>
+											<Icon name="calendar" size={16} style={tw`text-gray-400`} />
+										</TouchableOpacity>
 									</View>
 								</View>
 
@@ -245,6 +248,35 @@ function DateRangeSelect(props) {
 					</View>
 				</View>
 			</Modal>
+
+			{/* Native Date Pickers */}
+			{showStartDatePicker && (
+				<DateTimePicker
+					value={tempStartDate.toDate()}
+					mode="date"
+					display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+					onChange={(event, selectedDate) => {
+						setShowStartDatePicker(false);
+						if (selectedDate) {
+							handleStartDateChange(event, selectedDate);
+						}
+					}}
+				/>
+			)}
+
+			{showEndDatePicker && (
+				<DateTimePicker
+					value={tempEndDate.toDate()}
+					mode="date"
+					display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+					onChange={(event, selectedDate) => {
+						setShowEndDatePicker(false);
+						if (selectedDate) {
+							handleEndDateChange(event, selectedDate);
+						}
+					}}
+				/>
+			)}
 		</View>
 	);
 }

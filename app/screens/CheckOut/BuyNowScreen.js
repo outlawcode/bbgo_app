@@ -233,7 +233,7 @@ function BuyNowScreen(props) {
 								overScrollMode={'never'}
 								scrollEventThrottle={16}
 							>
-								<View style={tw`pb-64`}>
+								<View style={tw`pb-96`}>
 									<KeyboardAwareScrollView>
 										<View style={tw`bg-white rounded-lg shadow-sm border border-gray-200 mb-4`}>
 											{result.prices && result.prices.map((item, index) => (
@@ -457,7 +457,7 @@ function BuyNowScreen(props) {
 								</View>
 							</ScrollView>
 
-							<View style={tw`absolute bottom-52 android:bottom-42 bg-white w-full pb-5 pt-1 shadow-lg px-3`}>
+							<View style={tw`absolute bottom-52 android:bottom-48 bg-white w-full pb-5 pt-1 shadow-lg px-3`}>
 								<View style={tw`mb-2`}>
 									<View style={tw`flex items-center content-center`}>
 										<TouchableOpacity

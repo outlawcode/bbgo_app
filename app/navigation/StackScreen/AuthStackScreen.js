@@ -5,6 +5,7 @@ import LoginScreen from "app/screens/Auth/LoginScreen";
 import RegisterScreen from "app/screens/Auth/RegisterScreen";
 import ForgotPasswordScreen from "app/screens/Auth/ForgotPasswordScreen";
 import ResetPasswordScreen from "app/screens/Auth/ResetPasswordScreen";
+import ContactScreen from "app/screens/Contact";
 
 const AuthStack = createStackNavigator()
 
@@ -58,6 +59,11 @@ export function AuthStackScreen() {
 				animationEnabled: false,
 				gestureEnabled: false,
 			}}
+		/>
+		<AuthStack.Screen
+			name={"Contact"}
+			component={ContactScreen}
+			options={{ headerShown: true }}
 		/>
 	</AuthStack.Navigator>
 }

@@ -15,6 +15,7 @@ import { HomeStackScreen } from "app/navigation/StackScreen/HomeStackScreen";
 import OrdersScreen from "app/screens/Orders";
 import OrderDetailScreen from "app/screens/Orders/OrderDetail";
 import CheckoutScreen from "app/screens/CheckOut/Checkout.js";
+import ContactScreen from "app/screens/Contact";
 
 const ProductStack = createStackNavigator()
 export const ProductStackScreen = () => (
@@ -108,6 +109,11 @@ export const ProductStackScreen = () => (
 		<ProductStack.Screen
 			name={"CheckoutScreen"}
 			component={CheckoutScreen}
+		/>
+		<ProductStack.Screen
+			name={"Contact"}
+			component={ContactScreen}
+			options={{ headerShown: true }}
 		/>
 	</ProductStack.Navigator>
 )

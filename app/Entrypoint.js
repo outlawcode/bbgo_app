@@ -7,6 +7,7 @@ import {ActivityIndicator, LogBox, Platform, Text, TextInput} from "react-native
 import {Provider, useDispatch, useSelector} from "react-redux";
 import {PersistGate} from 'redux-persist/es/integration/react';
 import {Provider as PaperProvider} from 'react-native-paper';
+import {SafeAreaProvider} from 'react-native-safe-area-context';
 
 import {CombinedDarkTheme, CombinedDefaultTheme, PaperThemeDark, PaperThemeDefault} from 'app/config/theme-config.ts';
 import Navigator from 'app/navigation/index';
@@ -18,6 +19,7 @@ import {AppConfig} from "app/config/api-config";
 import {GetFCMToken, NotificationListener, requestUserPermission} from "app/utils/pushnotifycation";
 import {WalletConnectModal} from "@walletconnect/modal-react-native";
 import tw from "twrnc";
+import FloatingContactFAB from 'app/components/FloatingContactFAB';
 
 // Use main project ID (make sure this is correct and active)
 const projectId = 'b5adb2e19ab2dd031b96956954f8cc6c';
@@ -144,7 +146,12 @@ const RootNavigation = (props) => {
   return (
     <PaperProvider theme={paperTheme}>
       <Navigator theme={combinedTheme} />
-      {/*<FloatingHotlineButton phoneNumber={(settings && settings.contact_hotline) ? settings.contact_hotline : "0909456789"} bottom={104} right={16} size={48} />*/}
+      <FloatingContactFAB 
+        hotline={(settings && (settings.contact_hotline || settings.hotline)) ? (settings.contact_hotline || settings.hotline) : undefined}
+        zalo={(settings && (settings.contact_zalo || settings.zalo)) ? (settings.contact_zalo || settings.zalo) : undefined}
+        bottom={100}
+        right={16}
+      />
     </PaperProvider>
   );
 };
@@ -175,6 +182,7 @@ const EntryPoint = () => {
   }, []);
 
   return (
+    <SafeAreaProvider>
     <Provider store={store}>
       <PersistGate loading={<ActivityIndicator />} persistor={persistor}>
         <RootNavigation />
@@ -191,6 +199,7 @@ const EntryPoint = () => {
         <FlashMessage position={"top"} style={tw`pt-12`} />
       </PersistGate>
     </Provider>
+    </SafeAreaProvider>
   );
 };
 
