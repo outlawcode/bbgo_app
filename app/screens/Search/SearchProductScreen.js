@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { RefreshControl, ScrollView, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 import { apiClient } from "app/services/client";

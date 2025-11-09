@@ -1,17 +1,16 @@
 import React, { useEffect, useRef, useState } from "react";
-import {
-	ActivityIndicator,
+import { ActivityIndicator,
 	Image,
 	RefreshControl,
 	ScrollView,
 	StatusBar,
-	Text,
 	TouchableOpacity,
 	View,
 	Modal,
 	Platform,
-	Dimensions,
-} from "react-native";
+	Dimensions } from 'react-native';
+import { Text } from 'app/components';
+;
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 import { useIsFocused } from "@react-navigation/native";

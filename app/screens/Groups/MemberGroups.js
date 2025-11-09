@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
+import { View, TouchableOpacity, FlatList, RefreshControl } from 'react-native';
+import { Text } from 'app/components';
+;
 import tw from 'twrnc';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import AsyncStorage from '@react-native-async-storage/async-storage';

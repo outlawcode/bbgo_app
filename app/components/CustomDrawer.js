@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Text, TouchableOpacity, View, Linking } from "react-native";
+import { TouchableOpacity, View, Linking } from 'react-native';
+import { Text } from 'app/components';
+;
 import tw from "twrnc";
 import { apiClient } from "app/services/client";
 import { DrawerContentScrollView, DrawerItemList } from "@react-navigation/drawer";

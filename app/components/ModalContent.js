@@ -1,5 +1,7 @@
 import React, {useState} from 'react';
-import {View, Text} from 'react-native';
+import { View } from 'react-native';
+import { Text } from 'app/components';
+;
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import {WebView} from 'react-native-webview';
 import tw from "twrnc";

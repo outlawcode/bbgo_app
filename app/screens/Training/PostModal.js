@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Modal, ScrollView, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { Modal, ScrollView, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 import { apiClient } from "app/services/client";

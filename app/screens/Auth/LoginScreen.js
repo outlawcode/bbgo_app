@@ -1,7 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {
-	Text,
-	TouchableOpacity,
+import { TouchableOpacity,
 	View,
 	StyleSheet,
 	Image,
@@ -9,8 +7,9 @@ import {
 	KeyboardAvoidingView,
 	Platform,
 	TextInput,
-	ActivityIndicator
-} from "react-native";
+	ActivityIndicator } from 'react-native';
+import { Text } from 'app/components';
+;
 import { Field, Formik } from "formik";
 import * as Yup from "yup";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";

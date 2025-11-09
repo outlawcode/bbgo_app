@@ -2,7 +2,9 @@ import React from "react";
 import { useSelector } from "react-redux";
 import tw from "twrnc";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
-import { Text, View } from "react-native";
+import { View } from 'react-native';
+import { Text } from 'app/components';
+;
 
 function CartBottomIcon(props) {
 	const cart = useSelector(state => state.CartReducer);

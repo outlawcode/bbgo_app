@@ -1,5 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Image, Keyboard, Platform, ScrollView, StatusBar, Text, TouchableOpacity, View, Modal, TextInput, FlatList } from "react-native";
+import { Image, Keyboard, Platform, ScrollView, StatusBar, TouchableOpacity, View, Modal, TextInput, FlatList } from 'react-native';
+import { Text } from 'app/components';
+;
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 import CartIcon from "app/screens/Cart/components/cartIcon";

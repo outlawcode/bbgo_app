@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList } from 'react-native';
+import { View, FlatList } from 'react-native';
+import { Text } from 'app/components';
+;
 import tw from 'twrnc';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';

@@ -1,16 +1,15 @@
 import React, {useEffect, useState} from "react";
-import {
-	Alert,
+import { Alert,
 	Image,
 	Platform,
 	RefreshControl,
 	ScrollView,
 	StatusBar,
-	Text,
 	TouchableOpacity,
 	View,
-	Modal,
-} from "react-native";
+	Modal } from 'react-native';
+import { Text } from 'app/components';
+;
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import tw from "twrnc";
 import {useDispatch, useSelector} from "react-redux";

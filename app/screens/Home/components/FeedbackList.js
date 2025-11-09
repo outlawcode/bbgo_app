@@ -1,5 +1,7 @@
 import React, {useEffect, useRef, useState} from "react";
-import {Dimensions, Image, ScrollView, Text, TouchableOpacity, View} from "react-native";
+import { Dimensions, Image, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import tw from "twrnc";
 import Carousel from "react-native-reanimated-carousel";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";

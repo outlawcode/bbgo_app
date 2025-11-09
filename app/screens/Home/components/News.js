@@ -1,5 +1,7 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View, Dimensions } from "react-native";
+import { Image, ScrollView, TouchableOpacity, View, Dimensions } from 'react-native';
+import { Text } from 'app/components';
+;
 import tw from "twrnc";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import NewsItem from "app/components/NewsItem";

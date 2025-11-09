@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, Modal, TextInput, FlatList } from 'react-native';
+import { View, TouchableOpacity, ScrollView, Modal, TextInput, FlatList } from 'react-native';
+import { Text } from 'app/components';
+;
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import tw from 'twrnc';
 

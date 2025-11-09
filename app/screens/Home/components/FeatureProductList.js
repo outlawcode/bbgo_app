@@ -1,5 +1,7 @@
 import React, {useRef} from "react";
-import {Dimensions, FlatList, Text, TouchableOpacity, View} from "react-native";
+import { Dimensions, FlatList, TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import tw from "twrnc";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import ProductItem from "app/components/ProductItem";

@@ -1,5 +1,7 @@
 import React, {useEffect, useState} from "react";
-import {FlatList, Modal, RefreshControl, ScrollView, Text, TouchableOpacity, View} from "react-native";
+import { FlatList, Modal, RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import {useDispatch, useSelector} from "react-redux";
 import tw from "twrnc";
 import {formatDate, formatVND} from "app/utils/helper";

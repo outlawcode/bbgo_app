@@ -1,6 +1,8 @@
 import React from "react";
 import tw from "twrnc";
-import { Text, TouchableOpacity, View } from "react-native";
+import { TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import { TransactionType } from "app/models/commons/transaction.model";
 import { formatDateTime, formatNumber, formatVND } from "app/utils/helper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";

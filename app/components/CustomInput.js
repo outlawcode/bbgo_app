@@ -1,5 +1,7 @@
 import React from 'react'
-import {Text, TextInput, StyleSheet, View} from 'react-native';
+import { TextInput, StyleSheet, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import tw from 'twrnc';
 
 const CustomInput = React.forwardRef((props, ref) => {

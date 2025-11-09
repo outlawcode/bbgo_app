@@ -1,5 +1,7 @@
 import React, {useEffect, useState} from "react";
-import {Clipboard, Image, RefreshControl, ScrollView, Text, TouchableOpacity, View} from "react-native";
+import { Clipboard, Image, RefreshControl, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import apiConfig from "app/config/api-config";

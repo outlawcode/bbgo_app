@@ -1,15 +1,14 @@
 import React, {useEffect, useState} from "react";
-import {
-	ActivityIndicator,
+import { ActivityIndicator,
 	// Image,
 	Platform,
 	RefreshControl,
 	ScrollView,
 	Share,
-	Text,
 	TouchableOpacity,
-	View,
-} from "react-native";
+	View } from 'react-native';
+import { Text } from 'app/components';
+;
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 // import affiliateImage from '../../assets/images/affiliate.jpg'

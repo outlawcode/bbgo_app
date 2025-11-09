@@ -1,5 +1,7 @@
 import React, {useRef, useState} from "react";
-import {Dimensions, Image, StyleSheet, Text, TouchableOpacity, View} from "react-native";
+import { Dimensions, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import Carousel from "react-native-reanimated-carousel";
 import tw from "twrnc";
 

@@ -1,5 +1,7 @@
 import React from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Image, ScrollView, TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import tw from "twrnc";
 import ApiConfig from "app/config/api-config";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";

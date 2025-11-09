@@ -1,12 +1,10 @@
 import React, {useEffect, useRef, useState} from "react";
-import {
-	Image,
+import { Image,
 	Platform,
 	RefreshControl,
 	ScrollView,
 	Share,
 	StatusBar,
-	Text,
 	TextInput,
 	TouchableOpacity,
 	useWindowDimensions,
@@ -14,8 +12,9 @@ import {
 	Linking,
 	Modal,
 	Animated,
-	ActivityIndicator
-} from "react-native";
+	ActivityIndicator } from 'react-native';
+import { Text } from 'app/components';
+;
 import {useDispatch, useSelector} from "react-redux";
 import axios from "axios";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";

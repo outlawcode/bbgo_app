@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, Modal, Platform, ScrollView, Alert } from "react-native";
+import { View, TouchableOpacity, Modal, Platform, ScrollView, Alert } from 'react-native';
+import { Text } from 'app/components';
+;
 import DateTimePicker from '@react-native-community/datetimepicker';
 import moment from "moment";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";

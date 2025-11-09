@@ -3,7 +3,8 @@
  * Everything starts from the Entry-point
  */
 import React, {useEffect} from "react";
-import {ActivityIndicator, LogBox, Platform, Text, TextInput} from "react-native";
+import { ActivityIndicator, LogBox, Platform, TextInput } from 'react-native';
+import { Text } from 'app/components';
 import {Provider, useDispatch, useSelector} from "react-redux";
 import {PersistGate} from 'redux-persist/es/integration/react';
 import {Provider as PaperProvider} from 'react-native-paper';
@@ -149,7 +150,8 @@ const RootNavigation = (props) => {
       <FloatingContactFAB 
         hotline={(settings && (settings.contact_hotline || settings.hotline)) ? (settings.contact_hotline || settings.hotline) : undefined}
         zalo={(settings && (settings.contact_zalo || settings.zalo)) ? (settings.contact_zalo || settings.zalo) : undefined}
-        bottom={100}
+        bottom={Platform.OS === 'android' ? 200 : 100}
+        raise={Platform.OS === 'android' ? 60 : 0}
         right={16}
       />
     </PaperProvider>

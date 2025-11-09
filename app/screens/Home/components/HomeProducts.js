@@ -1,7 +1,9 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { apiClient } from "app/services/client";
 import tw from "twrnc";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ScrollView, TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { FlatGrid } from "react-native-super-grid";
 import ProductItem from "app/components/ProductItem";

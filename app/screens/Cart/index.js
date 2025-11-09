@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Alert, Image, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, ScrollView, StatusBar, TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import tw from "twrnc";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { emptyCart, removeFromCart, updateCart } from "app/screens/Cart/action";

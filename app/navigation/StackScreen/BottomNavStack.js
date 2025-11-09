@@ -3,7 +3,9 @@ import {HomeStackScreen} from "app/navigation/StackScreen/HomeStackScreen";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons'
 import {createBottomTabNavigator} from "@react-navigation/bottom-tabs";
 import {AccountStackScreen} from "app/navigation/StackScreen/AccountStackScreen";
-import {Platform, Text, View, Image} from "react-native";
+import { Platform, View, Image } from 'react-native';
+import { Text } from 'app/components';
+;
 import tw from "twrnc";
 import {ProductStackScreen} from "app/navigation/StackScreen/ProductStackScreen";
 import {CartStackScreen} from "app/navigation/StackScreen/CartStackScreen";

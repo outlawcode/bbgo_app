@@ -1,5 +1,7 @@
 import React from 'react';
-import {Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
+import { TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import tw from 'twrnc';
 import {WebView} from 'react-native-webview';
 import InfoModalContent from './ModalContent';

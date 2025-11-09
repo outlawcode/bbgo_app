@@ -1,5 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
-import { Animated, Dimensions, Easing, Linking, Platform, TouchableOpacity, View, Alert, TouchableWithoutFeedback, Text } from 'react-native';
+import { Animated, Dimensions, Easing, Linking, Platform, TouchableOpacity, View, Alert, TouchableWithoutFeedback } from 'react-native';
+import { Text } from 'app/components';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import FAIcon from 'react-native-vector-icons/FontAwesome';
 import tw from 'twrnc';
@@ -47,7 +48,7 @@ const ActionBtn = ({ icon, label, color = '#2563eb', onPress, size = 44 }) => (
   </TouchableOpacity>
 );
 
-function FloatingContactFAB({ hotline, zalo, bottom = Platform.OS === 'android' ? 130 : 90, right = 16 }) {
+function FloatingContactFAB({ hotline, zalo, bottom = Platform.OS === 'android' ? 180 : 90, right = 16, raise = 0 }) {
   const { width, height } = Dimensions.get('window');
   const [expanded, setExpanded] = useState(false);
 
@@ -56,7 +57,11 @@ function FloatingContactFAB({ hotline, zalo, bottom = Platform.OS === 'android' 
   const carousel = useRef(new Animated.Value(0)).current; // cycles icons when collapsed
 
   const mainSize = 48;
-  const initialPos = useMemo(() => ({ x: Math.max(8, width - right - mainSize), y: Math.max(60, height - bottom - mainSize) }), [width, height, right, bottom]);
+  const initialPos = useMemo(() => {
+    const baseY = Math.max(60, height - bottom - mainSize);
+    const androidExtra = Platform.OS === 'android' ? 80 : 0;
+    return { x: Math.max(8, width - right - mainSize), y: Math.max(60, baseY - androidExtra - raise) };
+  }, [width, height, right, bottom, raise]);
   const position = useRef(new Animated.ValueXY(initialPos)).current;
 
   const toggle = () => {

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Dimensions, StyleSheet, Text, TouchableOpacity, useWindowDimensions, View } from "react-native";
+import { Dimensions, StyleSheet, TouchableOpacity, useWindowDimensions, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 import { SceneMap, TabBar, TabView } from "react-native-tab-view";

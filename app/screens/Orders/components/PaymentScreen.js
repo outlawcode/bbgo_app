@@ -1,5 +1,7 @@
 import React, {useState} from "react";
-import {Text, TouchableOpacity, View} from "react-native";
+import { TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import tw from "twrnc";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import {displayNumber, formatVND} from "app/utils/helper.js";

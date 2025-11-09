@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useMemo, useState} from "react";
-import {
-	ActivityIndicator,
+import { ActivityIndicator,
 	Animated,
 	Dimensions,
 	FlatList,
@@ -8,10 +7,10 @@ import {
 	Platform,
 	RefreshControl, ScrollView,
 	StatusBar,
-	Text,
 	TouchableOpacity,
-	View
-} from "react-native";
+	View } from 'react-native';
+import { Text } from 'app/components';
+;
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {useDispatch, useSelector} from "react-redux";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';

@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import tw from "twrnc";
-import { Text, TouchableOpacity, View, TextInput } from "react-native";
+import { TouchableOpacity, View, TextInput } from 'react-native';
+import { Text } from 'app/components';
+;
 
 function CanceledOrderForm(props) {
 	const inputRef = useRef(null);

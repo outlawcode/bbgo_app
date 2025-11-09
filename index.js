@@ -1,6 +1,10 @@
 /**
  * @format
  */
+// IMPORTANT: Import text shim FIRST to patch Text and TextInput components
+// This must be imported before react-native-gesture-handler and any other imports
+import './app/utils/textShim';
+
 import 'react-native-gesture-handler';
 import { AppRegistry } from 'react-native';
 import EntryPoint from './app/Entrypoint';

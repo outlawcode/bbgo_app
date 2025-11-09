@@ -1,5 +1,7 @@
 import React from "react";
-import {Image, Text, TouchableOpacity, View} from "react-native";
+import { Image, TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import tw from "twrnc";
 import {formatDateTime, formatVND} from "app/utils/helper";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";

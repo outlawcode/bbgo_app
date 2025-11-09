@@ -1,5 +1,7 @@
 import React, {useState} from "react";
-import {Text, TouchableOpacity, View,} from "react-native";
+import { TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 import * as Yup from "yup";

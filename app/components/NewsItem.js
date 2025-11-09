@@ -1,6 +1,8 @@
 import React from "react";
 import tw from "twrnc";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Image, TouchableOpacity, View } from 'react-native';
+import { Text } from 'app/components';
+;
 import ApiConfig from "app/config/api-config";
 import { formatVND } from "app/utils/helper";
 

@@ -1,5 +1,7 @@
 import React, { useEffect, useState} from "react";
-import { RefreshControl, ScrollView, Text, TouchableOpacity, useWindowDimensions, View, ActivityIndicator } from "react-native";
+import { RefreshControl, ScrollView, TouchableOpacity, useWindowDimensions, View, ActivityIndicator } from 'react-native';
+import { Text } from 'app/components';
+;
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import tw from "twrnc";
 import CartIcon from "app/screens/Cart/components/cartIcon";

@@ -1,13 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
+import { View,
   TouchableOpacity,
   ScrollView,
   StatusBar,
   TextInput,
-  Alert,
-} from 'react-native';
+  Alert } from 'react-native';
+import { Text } from 'app/components';
+;
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import tw from 'twrnc';
 import { useSelector, useDispatch } from 'react-redux';
