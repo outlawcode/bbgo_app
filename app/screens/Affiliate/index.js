@@ -386,7 +386,7 @@ function AffiliateProgramScreen(props) {
 						<View style={tw`mx-5 mt-3`}>
 							{/* Level Info */}
 							<View style={tw`bg-cyan-50 border border-cyan-200 rounded-md p-3 mb-3`}>
-								<View style={tw`flex flex-row items-center`}>
+								<View style={tw`flex flex-row items-center mb-1`}>
 									{changingLevel ? (
 										<ActivityIndicator size="small" style={tw`mr-2`} />
 									) : (
@@ -396,6 +396,15 @@ function AffiliateProgramScreen(props) {
 										{changingLevel ? 'Đang tải...' : `Đang xem Level ${selectedLevel} - ${members && members.count} thành viên`}
 									</Text>
 								</View>
+								{/* Hiển thị tổng doanh số F1 + F2 cho level 1 và 2 */}
+								{(selectedLevel === 1 || selectedLevel === 2) && members && members.totalF1F2Revenue !== undefined && (
+									<View style={tw`flex flex-row items-center mt-1`}>
+										<Icon name="cash" size={16} style={tw`text-cyan-600 mr-2`} />
+										<Text style={tw`text-cyan-700 text-sm font-medium`}>
+											Doanh số F1 + F2: {formatVND(members.totalF1F2Revenue || 0)}
+										</Text>
+									</View>
+								)}
 							</View>
 
 							<View style={tw`bg-white border border-gray-200 rounded-md`}>
@@ -411,6 +420,12 @@ function AffiliateProgramScreen(props) {
 												<View style={tw`flex-1`}>
 													<Text style={tw`text-gray-900 font-medium`} numberOfLines={1}>{m.name}</Text>
 													<Text style={tw`text-xs text-gray-600`} numberOfLines={1}>{m.phone}  •  ID: {m.id}</Text>
+													{/* Hiển thị doanh số cho level 1 và 2 */}
+													{(selectedLevel === 1 || selectedLevel === 2) && m.personalRevenue !== undefined && (
+														<Text style={tw`text-xs text-blue-500 font-medium mt-1`}>
+															Doanh số: {formatVND(m.personalRevenue || 0)}
+														</Text>
+													)}
 												</View>
 												<View style={tw`items-end`}>
 													<Text style={tw`text-xs text-blue-600 font-semibold`} numberOfLines={1}>Level: {m.level}</Text>

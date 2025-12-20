@@ -22,6 +22,8 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useIsFocused} from "@react-navigation/native";
 import QRCode from "react-native-qrcode-svg";
+import KPIInfo from "./components/KPIInfo";
+import CTVRegistrationBanner from "./components/CTVRegistrationBanner";
 
 function AccountScreen(props) {
 	const isFocused = useIsFocused();
@@ -35,6 +37,9 @@ function AccountScreen(props) {
 	const [chain, setChain] = useState(null)
 	const [showLevelModal, setShowLevelModal] = useState(false)
 	const [userProgress, setUserProgress] = useState(null)
+	const [kpiData, setKpiData] = useState(null)
+	const [levelsInfo, setLevelsInfo] = useState(null)
+	const [loadingLevelData, setLoadingLevelData] = useState(false)
 
 	// Define colors for each level
 	const levelColors = [
@@ -254,6 +259,29 @@ function AccountScreen(props) {
 			getUserProgress();
 		}
 	}, [dispatch, refresh, isFocused])
+
+	useEffect(() => {
+		if (showLevelModal) {
+			fetchLevelModalData();
+		}
+	}, [showLevelModal])
+
+	const fetchLevelModalData = async () => {
+		setLoadingLevelData(true);
+		try {
+			const token = await AsyncStorage.getItem('sme_user_token');
+			const [kpiRes, levelRes] = await Promise.all([
+				axios.get(`${apiConfig.BASE_URL}/member/kpi/realtime`, { headers: { Authorization: `Bearer ${token}` } }).catch(() => ({ data: null })),
+				axios.get(`${apiConfig.BASE_URL}/member/kpi/levels-info`, { headers: { Authorization: `Bearer ${token}` } })
+			]);
+			setKpiData(kpiRes.data);
+			setLevelsInfo(levelRes.data);
+		} catch (error) {
+			console.log('Level modal data error:', error);
+		} finally {
+			setLoadingLevelData(false);
+		}
+	}
 
 	const menu = [
 		{
@@ -582,6 +610,12 @@ function AccountScreen(props) {
 							</View>
 						)}
 
+						{/* CTV Registration Banner */}
+						<CTVRegistrationBanner />
+
+						{/* KPI Info */}
+						<KPIInfo />
+
 						{/* Orders Section - Compact & Clean */}
 						<View style={tw`mb-4 bg-white shadow-lg rounded-xl border border-gray-100`}>
 							<View style={tw`px-4 py-3 border-b border-gray-100 flex flex-row items-center justify-between`}>
@@ -788,279 +822,254 @@ function AccountScreen(props) {
 					</View>
 				</ScrollView>
 
-				{/* Level Progress Modal */}
-				<Modal
-					visible={showLevelModal}
-					animationType="slide"
-					transparent={true}
-					onRequestClose={() => setShowLevelModal(false)}
-				>
-					<View style={tw`flex-1 bg-black bg-opacity-50 justify-end`}>
-						<View style={tw`bg-white rounded-t-xl max-h-5/6`}>
-							{/* Modal Header */}
-							<View style={tw`px-4 py-3 border-b border-gray-200 flex flex-row items-center justify-between`}>
-								<Text style={tw`font-bold text-lg text-gray-800`}>Tiến trình cấp bậc</Text>
-								<TouchableOpacity
-									onPress={() => setShowLevelModal(false)}
-									style={tw`w-8 h-8 rounded-full bg-gray-100 items-center justify-center`}
-								>
-									<Icon name="close" size={16} style={tw`text-gray-600`} />
-								</TouchableOpacity>
-							</View>
+				
+                {/* Level Progress Modal */}
+                <Modal
+                    visible={showLevelModal}
+                    animationType="slide"
+                    transparent={true}
+                    onRequestClose={() => setShowLevelModal(false)}
+                >
+                    <View style={tw`flex-1 bg-black bg-opacity-50 justify-end`}>
+                        <View style={tw`bg-white rounded-t-xl max-h-5/6`}>
+                            {/* Modal Header */}
+                            <View style={tw`px-4 py-3 border-b border-gray-200 flex flex-row items-center justify-between`}>
+                                <Text style={tw`font-bold text-lg text-gray-800`}>Tiến trình cấp bậc</Text>
+                                <TouchableOpacity
+                                    onPress={() => setShowLevelModal(false)}
+                                    style={tw`w-8 h-8 rounded-full bg-gray-100 items-center justify-center`}
+                                >
+                                    <Icon name="close" size={16} style={tw`text-gray-600`} />
+                                </TouchableOpacity>
+                            </View>
 
-							{/* Modal Content */}
-							<ScrollView style={tw`px-4 py-3`}>
-								{userProgress ? (
-									<View>
-										{/* Header */}
-										<View style={tw`mb-4 text-center`}>
-											<View style={tw`flex flex-row items-center justify-center mb-2`}>
-												<Icon name="trophy" size={20} style={tw`text-yellow-500 mr-2`} />
-												<Text style={tw`font-bold text-lg text-gray-800`}>Tiến trình cấp bậc</Text>
-											</View>
-											<Text style={tw`text-gray-600 text-sm`}>
-												Theo dõi tiến trình phát triển cấp bậc của bạn
-											</Text>
-										</View>
+                            {/* Modal Content */}
+                            <ScrollView style={tw`px-4 py-3`}>
+                                {loadingLevelData ? (
+                                    <View style={tw`py-6 items-center`}>
+                                        <ActivityIndicator />
+                                        <Text style={tw`text-gray-600 mt-2`}>Đang tải dữ liệu...</Text>
+                                    </View>
+                                ) : (!currentUser || !levelsInfo) ? (
+                                    <View style={tw`py-6 items-center`}>
+                                        <Text style={tw`text-gray-600`}>Không có dữ liệu cấp bậc</Text>
+                                    </View>
+                                ) : (
+                                    <View>
+                                        {/* Header */}
+                                        <View style={tw`mb-4 text-center`}>
+                                            <View style={tw`flex flex-row items-center justify-center mb-2`}>
+                                                <Icon name="trophy" size={20} style={tw`text-yellow-500 mr-2`} />
+                                                <Text style={tw`font-bold text-lg text-gray-800`}>Tiến trình cấp bậc</Text>
+                                            </View>
+                                            <Text style={tw`text-gray-600 text-sm`}>
+                                                Theo dõi tiến trình phát triển cấp bậc của bạn
+                                            </Text>
+                                        </View>
 
-										{/* Current Level Info */}
-										<View style={tw`bg-green-50 p-3 rounded-lg mb-4`}>
-											<View style={tw`flex flex-row items-center`}>
-												<View style={tw`w-8 h-8 items-center justify-center mr-3`}>
-													<Icon name="star" size={24} style={{ color: userProgress.currentLevel?.color || '#52c41a' }} />
-												</View>
-												<View style={tw`flex-1`}>
-													<Text style={tw`font-bold text-gray-800 text-base`}>
-														Cấp bậc hiện tại: {userProgress.currentLevel?.name || 'Khách hàng'}
-													</Text>
-													<Text style={tw`text-gray-600 text-sm`}>
-														Chiết khấu: {userProgress.currentLevel?.discountPercent || 0}%
-													</Text>
-												</View>
-											</View>
-										</View>
+                                        {(() => {
+                                            const levels = levelsInfo?.levels || [];
+                                            const currentPositionNumber = Number(currentUser.positionNumber || 0);
+                                            const currentPositionName = currentUser.position || 'Khách hàng';
+                                            const currentLevel = levels.find(l => l.name === currentPositionName) || levels[0] || {};
+                                            const checkMonths = kpiData?.checkMonths || 2;
 
-										{/* Next Level Requirements */}
-										{userProgress.nextLevel && (
-											<View style={tw`mb-4`}>
-												<Text style={tw`font-bold text-blue-600 text-base mb-3`}>
-													Yêu cầu lên cấp {userProgress.nextLevel.name}
-												</Text>
+                                            const progressWidth = (current = 0, total = 0) => {
+                                                if (!total || total <= 0) return 0;
+                                                return Math.min(100, (current / total) * 100);
+                                            }
 
-												{/* KHTT & CTV: Chỉ cần đơn hàng riêng lẻ */}
-												{(userProgress.nextLevel.name === 'Khách hàng thân thiết' ||
-												  userProgress.nextLevel.name === 'Cộng tác viên') ? (
-													<View>
-														<View style={tw`bg-blue-50 p-3 rounded-lg mb-3`}>
-															<View style={tw`flex flex-row items-center`}>
-																<Icon name="help-circle" size={16} style={tw`text-blue-600 mr-2`} />
-																<Text style={tw`text-blue-800 text-sm`}>
-																	Chỉ cần có đơn hàng riêng lẻ đạt mức tối thiểu
-																</Text>
-															</View>
-														</View>
+                                            return (
+                                                <View>
+                                                    {/* Current Level Info */}
+                                                    <View style={tw`bg-green-50 p-3 rounded-lg mb-4`}>
+                                                        <View style={tw`flex flex-row items-center justify-between`}>
+                                                            <View style={tw`flex flex-row items-center`}>
+                                                                <Icon name="star" size={24} style={{ color: levelColors[currentPositionNumber] || '#6b7280' }} />
+                                                                <Text style={tw`ml-2 font-bold text-gray-800 text-base`}>
+                                                                    Cấp bậc hiện tại: {currentPositionName}
+                                                                </Text>
+                                                            </View>
+                                                            {currentPositionNumber >= 2 && (
+                                                                <View style={tw`bg-blue-100 px-2 py-1 rounded-full`}>
+                                                                    <Text style={tw`text-blue-700 text-xs font-medium`}>Check KPI: {checkMonths} tháng</Text>
+                                                                </View>
+                                                            )}
+                                                        </View>
+                                                        <Text style={tw`text-gray-600 text-sm mt-1`}>
+                                                            Chiết khấu: {currentLevel.discountPercent || 0}%
+                                                        </Text>
+                                                    </View>
 
-														<View style={tw`border border-green-500 rounded-lg p-3`}>
-															<View style={tw`flex flex-row justify-between items-center mb-2`}>
-																<Text style={tw`font-semibold text-gray-800`}>
-																	Đơn hàng riêng lẻ tối thiểu
-																</Text>
-																<Text style={tw`font-bold text-green-600`}>
-																	{formatVND(userProgress.nextLevel.minSingleOrderRequired)}
-																</Text>
-															</View>
-															<View style={tw`bg-gray-200 rounded-full h-2`}>
-																<View
-																	style={[
-																		tw`h-2 rounded-full`,
-																		{
-																			width: `${userProgress?.hasMinOrder ? 100 : 0}%`,
-																			backgroundColor: userProgress?.hasMinOrder ? '#52c41a' : '#ff4d4f'
-																		}
-																	]}
-																/>
-															</View>
-														</View>
-													</View>
-												) : (
-													<View>
-														{/* TVV trở lên: Logic hiển thị phụ thuộc vào có yêu cầu đơn hàng riêng lẻ hay không */}
-														{userProgress.nextLevel.minSingleOrderRequired > 0 ? (
-															<View>
-																<View style={tw`bg-blue-50 p-3 rounded-lg mb-3`}>
-																	<View style={tw`flex flex-row items-center`}>
-																		<Icon name="info" size={16} style={tw`text-blue-600 mr-2`} />
-																		<Text style={tw`text-blue-800 text-sm`}>
-																			Có thể lên cấp bằng 1 trong 2 cách sau:
-																		</Text>
-																	</View>
-																</View>
+                                                    {/* KPI Current Status */}
+                                                    {currentPositionNumber >= 2 && kpiData && kpiData.eligible && (
+                                                        <View>
+                                                            <View style={tw`bg-white border border-gray-200 rounded-lg p-3 mb-3`}>
+                                                                <Text style={tw`font-bold text-gray-800 text-base mb-2`}>KPI hiện tại</Text>
+                                                                <View style={tw`flex flex-row justify-between items-center mb-1`}>
+                                                                    <Text style={tw`text-sm text-gray-700`}>Tổng KPI ({checkMonths} tháng):</Text>
+                                                                    <Text style={tw`font-bold text-base ${kpiData.kpiData.totalKPISales >= (kpiData.maintainKPI || kpiData.upgradeKPI) ? 'text-green-600' : 'text-red-600'}`}>
+                                                                        {formatVND(kpiData.kpiData.totalKPISales)}
+                                                                    </Text>
+                                                                </View>
+                                                                <Text style={tw`text-xs text-gray-500`}>
+                                                                    Cá nhân: {formatVND(kpiData.kpiData.personalSales)} | F1: {formatVND(kpiData.kpiData.f1Sales)} | F2: {formatVND(kpiData.kpiData.f2Sales)}
+                                                                </Text>
+                                                            </View>
 
-																{/* Cách 1: Đơn hàng riêng lẻ */}
-																<View style={tw`border border-blue-500 rounded-lg p-3 mb-3`}>
-																	<Text style={tw`font-bold text-blue-600 text-sm mb-2`}>
-																		🎯 Cách 1: Đơn hàng riêng lẻ
-																	</Text>
-																	<View style={tw`flex flex-row justify-between items-center mb-2`}>
-																		<Text style={tw`text-gray-700`}>
-																			Đơn hàng riêng lẻ tối thiểu
-																		</Text>
-																		<Text style={tw`font-bold text-blue-600`}>
-																			{formatVND(userProgress.nextLevel.minSingleOrderRequired)}
-																		</Text>
-																	</View>
-																	<View style={tw`bg-gray-200 rounded-full h-2`}>
-																		<View
-																			style={[
-																				tw`h-2 rounded-full`,
-																				{
-																					width: `${userProgress?.hasMinOrder ? 100 : 0}%`,
-																					backgroundColor: userProgress?.hasMinOrder ? '#52c41a' : '#ff4d4f'
-																				}
-																			]}
-																		/>
-																	</View>
-																</View>
-															</View>
-														) : (
-															<View style={tw`bg-blue-50 p-3 rounded-lg mb-3`}>
-																<View style={tw`flex flex-row items-center`}>
-																	<Icon name="info" size={16} style={tw`text-blue-600 mr-2`} />
-																	<Text style={tw`text-blue-800 text-sm`}>
-																		Yêu cầu lên cấp dựa trên doanh số và F1:
-																	</Text>
-																</View>
-															</View>
-														)}
+                                                            {/* KPI duy trì */}
+                                                            {kpiData.maintainKPI > 0 && (
+                                                                <View style={tw`bg-white border border-gray-200 rounded-lg p-3 mb-3`}>
+                                                                    <View style={tw`flex flex-row justify-between items-center mb-1`}>
+                                                                        <Text style={tw`text-sm text-gray-700`}>KPI duy trì:</Text>
+                                                                        <Text style={tw`font-medium text-base ${kpiData.maintainStatus ? 'text-green-600' : 'text-red-600'}`}>
+                                                                            {formatVND(kpiData.maintainKPI)}
+                                                                        </Text>
+                                                                    </View>
+                                                                    {!kpiData.maintainStatus && kpiData.maintainMissing > 0 && (
+                                                                        <View>
+                                                                            <View style={tw`h-2 bg-gray-200 rounded-full overflow-hidden`}>
+                                                                                <View style={[tw`h-full bg-red-500 rounded-full`, { width: `${progressWidth(kpiData.kpiData.totalKPISales, kpiData.maintainKPI)}%` }]} />
+                                                                            </View>
+                                                                            <Text style={tw`text-xs text-red-600 text-right mt-1`}>
+                                                                                Còn thiếu {formatVND(kpiData.maintainMissing)}
+                                                                            </Text>
+                                                                        </View>
+                                                                    )}
+                                                                    {kpiData.maintainStatus && (
+                                                                        <View style={tw`flex flex-row items-center mt-1`}>
+                                                                            <Icon name="check-circle" size={14} style={tw`text-green-600 mr-1`} />
+                                                                            <Text style={tw`text-xs text-green-600`}>Đã đạt KPI duy trì</Text>
+                                                                        </View>
+                                                                    )}
+                                                                </View>
+                                                            )}
 
-														{/* Doanh số cá nhân + hệ thống */}
-														<View style={tw`border border-purple-500 rounded-lg p-3`}>
-															<Text style={tw`font-bold text-purple-600 text-sm mb-3`}>
-																📊 {userProgress.nextLevel.minSingleOrderRequired > 0
-																	? 'Cách 2: Doanh số cộng dồn'
-																	: 'Yêu cầu doanh số và F1'}
-															</Text>
+                                                            {/* KPI lên cấp */}
+                                                            {kpiData.nextPosition && kpiData.upgradeKPI > 0 && (
+                                                                <View style={tw`bg-white border border-gray-200 rounded-lg p-3 mb-3`}>
+                                                                    <View style={tw`flex flex-row justify-between items-center mb-1`}>
+                                                                        <Text style={tw`text-sm text-gray-700`}>KPI lên cấp {kpiData.nextPosition}:</Text>
+                                                                        <Text style={tw`font-medium text-base ${kpiData.upgradeStatus ? 'text-green-600' : 'text-red-600'}`}>
+                                                                            {formatVND(kpiData.upgradeKPI)}
+                                                                        </Text>
+                                                                    </View>
+                                                                    {!kpiData.upgradeStatus && kpiData.upgradeMissing > 0 && (
+                                                                        <View>
+                                                                            <View style={tw`h-2 bg-gray-200 rounded-full overflow-hidden`}>
+                                                                                <View style={[tw`h-full bg-blue-500 rounded-full`, { width: `${progressWidth(kpiData.kpiData.totalKPISales, kpiData.upgradeKPI)}%` }]} />
+                                                                            </View>
+                                                                            <Text style={tw`text-xs text-red-600 text-right mt-1`}>
+                                                                                Còn thiếu {formatVND(kpiData.upgradeMissing)}
+                                                                            </Text>
+                                                                        </View>
+                                                                    )}
+                                                                    {kpiData.upgradeStatus && (
+                                                                        <View style={tw`flex flex-row items-center mt-1`}>
+                                                                            <Icon name="check-circle" size={14} style={tw`text-green-600 mr-1`} />
+                                                                            <Text style={tw`text-xs text-green-600`}>Đã đủ điều kiện lên cấp {kpiData.nextPosition}!</Text>
+                                                                        </View>
+                                                                    )}
 
-															{/* Doanh số cộng dồn (personal + system) */}
-															{userProgress.nextLevel.systemSalesRequired > 0 && (
-																<View style={tw`mb-3`}>
-																	<View style={tw`flex flex-row justify-between items-center mb-2`}>
-																		<Text style={tw`text-gray-700`}>Doanh số cộng dồn</Text>
-																		<Text style={tw`text-gray-600`}>
-																			{formatVND(userProgress?.totalSales || 0)} / {formatVND(userProgress.nextLevel.systemSalesRequired)}
-																		</Text>
-																	</View>
-																	<View style={tw`bg-gray-200 rounded-full h-2`}>
-																		<View
-																			style={[
-																				tw`bg-purple-500 h-2 rounded-full`,
-																				{
-																					width: `${Math.min(100, ((userProgress?.totalSales || 0) / userProgress.nextLevel.systemSalesRequired) * 100)}%`
-																				}
-																			]}
-																		/>
-																	</View>
-																</View>
-															)}
+                                                                    {/* Single order upgrade notice */}
+                                                                    {kpiData.singleOrderUpgrade && kpiData.singleOrderUpgrade.eligible && (
+                                                                        <View style={tw`mt-3 bg-green-50 border border-green-200 rounded-lg p-3`}>
+                                                                            <View style={tw`flex flex-row items-start`}>
+                                                                                <Icon name="rocket" size={16} style={tw`text-green-600 mr-2`} />
+                                                                                <Text style={tw`text-green-700 text-xs`}>
+                                                                                    Bạn đã có đơn hàng riêng lẻ đủ điều kiện lên {kpiData.singleOrderUpgrade.newPosition}.
+                                                                                </Text>
+                                                                            </View>
+                                                                        </View>
+                                                                    )}
+                                                                </View>
+                                                            )}
+                                                        </View>
+                                                    )}
 
-															{/* F1 TDL */}
-															{userProgress.nextLevel.f1TdlRequired > 0 && (
-																<View>
-																	<View style={tw`flex flex-row justify-between items-center mb-2`}>
-																		<Text style={tw`text-gray-700`}>Số F1 là Tổng Đại Lý</Text>
-																		<Text style={tw`text-gray-600`}>
-																			{userProgress?.f1TdlCount || 0} / {userProgress.nextLevel.f1TdlRequired} người
-																		</Text>
-																	</View>
-																	<View style={tw`bg-gray-200 rounded-full h-2`}>
-																		<View
-																			style={[
-																				tw`bg-purple-500 h-2 rounded-full`,
-																				{
-																					width: `${Math.min(100, ((userProgress?.f1TdlCount || 0) / userProgress.nextLevel.f1TdlRequired) * 100)}%`
-																				}
-																			]}
-																		/>
-																	</View>
-																</View>
-															)}
-														</View>
-													</View>
-												)}
-											</View>
-										)}
+                                                    {/* All Levels Overview */}
+                                                    <View style={tw`bg-white border border-gray-200 rounded-lg p-3`}>
+                                                        <Text style={tw`font-bold text-gray-800 text-base mb-3`}>
+                                                            Tổng quan hệ thống cấp bậc
+                                                        </Text>
+                                                        <View style={tw`space-y-2`}>
+                                                            {(levels || []).map((level, index) => {
+                                                                const isCurrent = level.name === currentPositionName;
+                                                                const isPast = Number(level.positionNumber) < currentPositionNumber;
 
-										{/* All Levels Overview */}
-										<View style={tw`bg-white border border-gray-200 rounded-lg p-3`}>
-											<Text style={tw`font-bold text-gray-800 text-base mb-3`}>
-												Tổng quan hệ thống cấp bậc
-											</Text>
-											<View style={tw`space-y-2`}>
-												{userProgress?.levelHierarchy?.map((level, index) => (
-													<View
-														key={level.id}
-														style={tw`p-3 rounded-lg border ${
-															level.name === currentUser?.position 
-																? 'border-blue-500 bg-blue-50' 
-																: 'border-gray-200'
-														}`}
-													>
-														<View style={tw`flex flex-row items-center justify-between`}>
-															<View style={tw`flex flex-row items-center`}>
-																<Icon name="star" size={16} style={{ color: level.color }} />
-																<Text style={tw`ml-2 font-semibold ${
-																	level.name === currentUser?.position ? 'text-blue-600' : 'text-gray-800'
-																}`}>
-																	{level.name}
-																</Text>
-															</View>
-															<Text style={tw`text-sm text-gray-600`}>
-																Chiết khấu: {level.discountPercent}%
-															</Text>
-														</View>
+                                                                return (
+                                                                    <View
+                                                                        key={`${level.name}-${index}`}
+                                                                        style={tw`p-3 rounded-lg border ${
+                                                                            isCurrent
+                                                                                ? 'border-blue-500 bg-blue-50'
+                                                                                : isPast
+                                                                                ? 'border-green-200 bg-green-50'
+                                                                                : 'border-gray-200'
+                                                                        }`}
+                                                                    >
+                                                                        <View style={tw`flex flex-row items-center justify-between`}>
+                                                                            <View style={tw`flex flex-row items-center`}>
+                                                                                <Icon name="star" size={16} style={{ color: levelColors[level.positionNumber] || '#6b7280' }} />
+                                                                                <Text style={tw`ml-2 font-semibold ${isCurrent ? 'text-blue-600' : isPast ? 'text-green-600' : 'text-gray-800'}`}>
+                                                                                    {level.name}
+                                                                                </Text>
+                                                                            </View>
+                                                                            <Text style={tw`text-sm text-gray-600`}>
+                                                                                Chiết khấu: {level.discountPercent}%
+                                                                            </Text>
+                                                                        </View>
 
-														{/* Show requirements for future levels */}
-														{index > (userProgress?.levelHierarchy?.findIndex(l => l.name === currentUser?.position) || 0) && (
-															<View style={tw`mt-2`}>
-																<Text style={tw`text-xs text-gray-500 mb-1`}>Yêu cầu: </Text>
-																<View style={tw`flex flex-row flex-wrap`}>
-																	{level.minSingleOrderRequired > 0 && (
-																		<Text style={tw`text-xs text-gray-500 mr-4 mb-1`}>
-																			Đơn riêng lẻ: {formatVND(level.minSingleOrderRequired)} - {
-																				(level.name === 'Khách hàng thân thiết' && userProgress?.hasKhttMinOrder) ||
-																				(level.name === 'Cộng tác viên' && userProgress?.hasCtvMinOrder)
-																					? 'Đã có đơn đạt yêu cầu'
-																					: 'Chưa có đơn đạt yêu cầu'
-																			}
-																		</Text>
-																	)}
-																	{level.systemSalesRequired > 0 && (
-																		<Text style={tw`text-xs text-gray-500 mr-4 mb-1`}>
-																			DS cá nhân + hệ thống: {formatVND(level.systemSalesRequired)}
-																		</Text>
-																	)}
-																	{level.f1TdlRequired > 0 && (
-																		<Text style={tw`text-xs text-gray-500 mr-4 mb-1`}>
-																			F1 TDL: {level.f1TdlRequired}
-																		</Text>
-																	)}
-																</View>
-															</View>
-														)}
-													</View>
-												))}
-											</View>
-										</View>
-									</View>
-								) : (
-									<View style={tw`py-8 items-center`}>
-										<Text style={tw`text-gray-500`}>Đang tải thông tin cấp bậc...</Text>
-									</View>
-								)}
-							</ScrollView>
-						</View>
-					</View>
-				</Modal>
+                                                                        {level.positionNumber >= 2 && (
+                                                                            <View style={tw`mt-2 space-y-1`}>
+                                                                                {level.kpiUpgrade > 0 && (
+                                                                                    <View style={tw`flex flex-row justify-between`}>
+                                                                                        <Text style={tw`text-xs text-gray-600`}>KPI lên cấp:</Text>
+                                                                                        <Text style={tw`text-xs font-medium`}>{formatVND(level.kpiUpgrade)}</Text>
+                                                                                    </View>
+                                                                                )}
+                                                                                {level.kpiMaintain > 0 && (
+                                                                                    <View style={tw`flex flex-row justify-between`}>
+                                                                                        <Text style={tw`text-xs text-gray-600`}>KPI duy trì:</Text>
+                                                                                        <Text style={tw`text-xs font-medium`}>{formatVND(level.kpiMaintain)}</Text>
+                                                                                    </View>
+                                                                                )}
+                                                                                {(level.kpiUpgrade > 0 || level.kpiMaintain > 0) && (
+                                                                                    <Text style={tw`text-xs text-gray-500`}>
+                                                                                        (Doanh số cá nhân + F1 + F2 trong {checkMonths} tháng)
+                                                                                    </Text>
+                                                                                )}
+                                                                                {level.minSingleOrder > 0 && (
+                                                                                    <View style={tw`flex flex-row justify-between`}>
+                                                                                        <Text style={tw`text-xs text-gray-600`}>Đơn hàng riêng lẻ tối thiểu:</Text>
+                                                                                        <Text style={tw`text-xs font-medium text-blue-600`}>{formatVND(level.minSingleOrder)}</Text>
+                                                                                    </View>
+                                                                                )}
+                                                                            </View>
+                                                                        )}
+
+                                                                        {level.positionNumber < 2 && (
+                                                                            <View style={tw`mt-1`}>
+                                                                                <Text style={tw`text-xs text-gray-500`}>
+                                                                                    {level.positionNumber === 0 ? 'Không có yêu cầu đặc biệt' : 'Chỉ cần có một đơn hàng thành công'}
+                                                                                </Text>
+                                                                            </View>
+                                                                        )}
+                                                                    </View>
+                                                                )
+                                                            })}
+                                                        </View>
+                                                    </View>
+                                                </View>
+                                            )
+                                        })()}
+                                    </View>
+                                )}
+                            </ScrollView>
+                        </View>
+                    </View>
+                </Modal>
+
 			</View>
 		)
 	);
