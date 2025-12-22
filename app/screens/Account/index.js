@@ -7,7 +7,7 @@ import { Alert,
 	StatusBar,
 	TouchableOpacity,
 	View,
-	Modal } from 'react-native';
+	Modal, ActivityIndicator } from 'react-native';
 import { Text } from 'app/components';
 ;
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -17,7 +17,7 @@ import apiConfig, {AppConfig} from "app/config/api-config";
 import {LoadDataAction, memberLogout} from "app/screens/Auth/action";
 import {emptyCart} from "app/screens/Cart/action";
 import CartIcon from "app/screens/Cart/components/cartIcon";
-import {formatBalance, formatNumber, formatVND} from "app/utils/helper";
+import {formatBalance, formatNumber, formatVND, formatDateTime} from "app/utils/helper";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {useIsFocused} from "@react-navigation/native";
@@ -36,10 +36,13 @@ function AccountScreen(props) {
 	const [account, setAccount] = useState(currentUser && currentUser.cryptoWallet)
 	const [chain, setChain] = useState(null)
 	const [showLevelModal, setShowLevelModal] = useState(false)
+	const [showHistoryModal, setShowHistoryModal] = useState(false)
 	const [userProgress, setUserProgress] = useState(null)
 	const [kpiData, setKpiData] = useState(null)
 	const [levelsInfo, setLevelsInfo] = useState(null)
 	const [loadingLevelData, setLoadingLevelData] = useState(false)
+	const [positionHistory, setPositionHistory] = useState([])
+	const [loadingHistory, setLoadingHistory] = useState(false)
 
 	// Define colors for each level
 	const levelColors = [
@@ -266,6 +269,42 @@ function AccountScreen(props) {
 		}
 	}, [showLevelModal])
 
+	useEffect(() => {
+		if (showHistoryModal) {
+			fetchPositionHistory();
+		}
+	}, [showHistoryModal])
+
+	const fetchPositionHistory = async () => {
+		setLoadingHistory(true);
+		try {
+			const token = await AsyncStorage.getItem('sme_user_token');
+			const response = await axios.get(
+				`${apiConfig.BASE_URL}/user/position-history`,
+				{ headers: { Authorization: `Bearer ${token}` } }
+			);
+			setPositionHistory(response.data || []);
+		} catch (error) {
+			console.log('Error fetching position history:', error);
+			setPositionHistory([]);
+		} finally {
+			setLoadingHistory(false);
+		}
+	}
+
+	const getHistoryIcon = (item) => {
+		if (item.type === 'upgrade' || item.type === 'manual_upgrade') {
+			return <Icon name="arrow-up-bold" size={20} style={tw`text-green-500`} />;
+		}
+		if (item.type === 'downgrade') {
+			return <Icon name="arrow-down-bold" size={20} style={tw`text-red-500`} />;
+		}
+		if (item.source === 'ctv_registration') {
+			return <Icon name="crown" size={20} style={tw`text-blue-500`} />;
+		}
+		return <Icon name="account-circle" size={20} style={tw`text-gray-500`} />;
+	}
+
 	const fetchLevelModalData = async () => {
 		setLoadingLevelData(true);
 		try {
@@ -438,13 +477,22 @@ function AccountScreen(props) {
 									</View>
 								</View>
 							)}
-							<TouchableOpacity
-								onPress={() => setShowLevelModal(true)}
-								style={tw`bg-gray-100 px-3 py-1 rounded-lg`}
-								activeOpacity={0.7}
-							>
-								<Text style={tw`text-gray-600 text-xs font-medium`}>Chi tiết</Text>
-							</TouchableOpacity>
+							<View style={tw`flex flex-row gap-2`}>
+								<TouchableOpacity
+									onPress={() => setShowLevelModal(true)}
+									style={tw`bg-gray-100 px-3 py-1 rounded-lg`}
+									activeOpacity={0.7}
+								>
+									<Text style={tw`text-gray-600 text-xs font-medium`}>Chi tiết</Text>
+								</TouchableOpacity>
+								<TouchableOpacity
+									onPress={() => setShowHistoryModal(true)}
+									style={tw`bg-gray-100 px-3 py-1 rounded-lg`}
+									activeOpacity={0.7}
+								>
+									<Text style={tw`text-gray-600 text-xs font-medium`}>Lịch sử</Text>
+								</TouchableOpacity>
+							</View>
 						</View>
 					</View>
 				</View>
@@ -907,7 +955,16 @@ function AccountScreen(props) {
                                                             <View style={tw`bg-white border border-gray-200 rounded-lg p-3 mb-3`}>
                                                                 <Text style={tw`font-bold text-gray-800 text-base mb-2`}>KPI hiện tại</Text>
                                                                 <View style={tw`flex flex-row justify-between items-center mb-1`}>
-                                                                    <Text style={tw`text-sm text-gray-700`}>Tổng KPI ({checkMonths} tháng):</Text>
+                                                                    <View style={tw`flex-1`}>
+                                                                        <Text style={tw`text-sm text-gray-700`}>
+                                                                            Tổng KPI ({checkMonths} tháng)
+                                                                            {kpiData.currentMonths && kpiData.currentMonths.length > 0 && (
+                                                                                <Text style={tw`text-xs text-gray-500`}>
+                                                                                    {'\n'}({kpiData.currentMonths.join(' + ')})
+                                                                                </Text>
+                                                                            )}
+                                                                        </Text>
+                                                                    </View>
                                                                     <Text style={tw`font-bold text-base ${kpiData.kpiData.totalKPISales >= (kpiData.maintainKPI || kpiData.upgradeKPI) ? 'text-green-600' : 'text-red-600'}`}>
                                                                         {formatVND(kpiData.kpiData.totalKPISales)}
                                                                     </Text>
@@ -1063,6 +1120,68 @@ function AccountScreen(props) {
                                                 </View>
                                             )
                                         })()}
+                                    </View>
+                                )}
+                            </ScrollView>
+                        </View>
+                    </View>
+                </Modal>
+
+                {/* Position History Modal */}
+                <Modal
+                    visible={showHistoryModal}
+                    animationType="slide"
+                    transparent={true}
+                    onRequestClose={() => setShowHistoryModal(false)}
+                >
+                    <View style={tw`flex-1 bg-black bg-opacity-50 justify-end`}>
+                        <View style={tw`bg-white rounded-t-xl max-h-5/6`}>
+                            {/* Modal Header */}
+                            <View style={tw`px-4 py-3 border-b border-gray-200 flex flex-row items-center justify-between`}>
+                                <Text style={tw`font-bold text-lg text-gray-800`}>Lịch sử cấp bậc</Text>
+                                <TouchableOpacity
+                                    onPress={() => setShowHistoryModal(false)}
+                                    style={tw`w-8 h-8 rounded-full bg-gray-100 items-center justify-center`}
+                                >
+                                    <Icon name="close" size={16} style={tw`text-gray-600`} />
+                                </TouchableOpacity>
+                            </View>
+
+                            {/* Modal Content */}
+                            <ScrollView style={tw`px-4 py-3`}>
+                                {loadingHistory ? (
+                                    <View style={tw`py-6 items-center`}>
+                                        <ActivityIndicator />
+                                        <Text style={tw`text-gray-600 mt-2`}>Đang tải lịch sử...</Text>
+                                    </View>
+                                ) : positionHistory.length === 0 ? (
+                                    <View style={tw`py-6 items-center`}>
+                                        <Icon name="history" size={48} style={tw`text-gray-300 mb-2`} />
+                                        <Text style={tw`text-gray-600`}>Chưa có lịch sử cấp bậc</Text>
+                                    </View>
+                                ) : (
+                                    <View style={tw`space-y-4`}>
+                                        {positionHistory.map((item, index) => (
+                                            <View
+                                                key={index}
+                                                style={tw`flex flex-row items-start pb-4 ${index !== positionHistory.length - 1 ? 'border-b border-gray-200' : ''}`}
+                                            >
+                                                <View style={tw`flex-shrink-0 mt-1 mr-3`}>
+                                                    {getHistoryIcon(item)}
+                                                </View>
+                                                <View style={tw`flex-1`}>
+                                                    <Text style={tw`font-semibold text-base mb-1 text-gray-800`}>
+                                                        {item.position}
+                                                    </Text>
+                                                    <Text style={tw`text-gray-600 text-sm mb-1`}>
+                                                        {item.description}
+                                                    </Text>
+                                                    <Text style={tw`text-gray-400 text-xs`}>
+                                                        {formatDateTime(item.date)}
+                                                    </Text>
+                                                </View>
+                                            </View>
+                                        ))}
                                     </View>
                                 )}
                             </ScrollView>

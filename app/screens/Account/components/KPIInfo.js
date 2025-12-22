@@ -59,7 +59,16 @@ function KPIInfo() {
         {/* KPI hiện tại */}
         <View style={tw`mb-4`}>
           <View style={tw`flex flex-row justify-between items-center mb-1`}>
-            <Text style={tw`text-sm text-gray-600`}>KPI hiện tại ({checkMonths} tháng):</Text>
+            <View style={tw`flex-1`}>
+              <Text style={tw`text-sm text-gray-600`}>
+                KPI hiện tại ({checkMonths} tháng)
+                {kpiData.currentMonths && kpiData.currentMonths.length > 0 && (
+                  <Text style={tw`text-xs text-gray-500`}>
+                    {'\n'}({kpiData.currentMonths.join(' + ')})
+                  </Text>
+                )}
+              </Text>
+            </View>
             <Text style={[tw`font-bold text-base`, data.totalKPISales >= (maintainKPI || upgradeKPI) ? tw`text-green-600` : tw`text-red-600`]}>
               {formatVND(data.totalKPISales)}
             </Text>

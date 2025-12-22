@@ -2,7 +2,7 @@
  */
 const ApiConfig = {
   //BASE_URL: 'https://api.bbgo.vn/v1',
-  BASE_URL: 'http://192.168.1.11:2053/v1',
+  BASE_URL: 'http://192.168.1.12:2053/v1',
   //LOGIN: 'api/login',
 };
 
