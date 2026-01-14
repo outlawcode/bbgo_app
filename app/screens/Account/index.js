@@ -953,11 +953,10 @@ function AccountScreen(props) {
                                                     {currentPositionNumber >= 2 && kpiData && kpiData.eligible && (
                                                         <View>
                                                             <View style={tw`bg-white border border-gray-200 rounded-lg p-3 mb-3`}>
-                                                                <Text style={tw`font-bold text-gray-800 text-base mb-2`}>KPI hiện tại</Text>
-                                                                <View style={tw`flex flex-row justify-between items-center mb-1`}>
+                                                                <View style={tw`flex flex-row justify-between items-center mb-2`}>
                                                                     <View style={tw`flex-1`}>
-                                                                        <Text style={tw`text-sm text-gray-700`}>
-                                                                            Tổng KPI ({checkMonths} tháng)
+                                                                        <Text style={tw`text-sm text-gray-600`}>
+                                                                            KPI hiện tại ({checkMonths} tháng)
                                                                             {kpiData.currentMonths && kpiData.currentMonths.length > 0 && (
                                                                                 <Text style={tw`text-xs text-gray-500`}>
                                                                                     {'\n'}({kpiData.currentMonths.join(' + ')})
@@ -1039,6 +1038,48 @@ function AccountScreen(props) {
                                                                             </View>
                                                                         </View>
                                                                     )}
+                                                                </View>
+                                                            )}
+
+                                                            {/* Thông báo */}
+                                                            {kpiData.messages && kpiData.messages.length > 0 && (
+                                                                <View style={tw`mt-3`}>
+                                                                    {kpiData.messages.map((msg, index) => {
+                                                                        const isSuccess = msg.includes('đủ điều kiện') || msg.includes('đạt KPI') || msg.includes('Chúc mừng') || msg.includes('thăng cấp');
+                                                                        const isWarning = msg.includes('thiếu') || msg.includes('cần thêm');
+                                                                        
+                                                                        let bgColor = 'bg-blue-50';
+                                                                        let borderColor = 'border-blue-300';
+                                                                        let textColor = 'text-blue-800';
+                                                                        let iconColor = 'text-blue-600';
+                                                                        let iconName = 'information';
+
+                                                                        if (isSuccess) {
+                                                                            bgColor = 'bg-green-50';
+                                                                            borderColor = 'border-green-300';
+                                                                            textColor = 'text-green-800';
+                                                                            iconColor = 'text-green-600';
+                                                                            iconName = 'check-circle';
+                                                                        } else if (isWarning) {
+                                                                            bgColor = 'bg-yellow-50';
+                                                                            borderColor = 'border-yellow-300';
+                                                                            textColor = 'text-yellow-800';
+                                                                            iconColor = 'text-yellow-600';
+                                                                            iconName = 'alert';
+                                                                        }
+
+                                                                        return (
+                                                                            <View 
+                                                                                key={index} 
+                                                                                style={tw`${bgColor} ${borderColor} border rounded-lg p-3 mb-2`}
+                                                                            >
+                                                                                <View style={tw`flex flex-row items-start`}>
+                                                                                    <Icon name={iconName} size={16} style={tw`${iconColor} mr-2 mt-0.5`} />
+                                                                                    <Text style={tw`${textColor} text-xs flex-1`}>{msg}</Text>
+                                                                                </View>
+                                                                            </View>
+                                                                        );
+                                                                    })}
                                                                 </View>
                                                             )}
                                                         </View>
