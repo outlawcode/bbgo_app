@@ -2,8 +2,8 @@
  */
 const ApiConfig = {
   //BASE_URL: 'https://api.bbgo.vn/v1',
-  BASE_URL: 'https://apibbgo.trailer.work/v1',
-  //BASE_URL: 'http://192.168.1.12:2053/v1',
+  //BASE_URL: 'https://apibbgo.trailer.work/v1',
+  BASE_URL: 'http://192.168.1.16:2053/v1',
   //LOGIN: 'api/login',
 };
 
@@ -13,8 +13,8 @@ export const RecaptchaConfig = {
 }
 
 export const AppConfig = {
-  androidVersion: '1.0.12',
-  iosVersion: '1.0.8'
+  androidVersion: '1.0.15',
+  iosVersion: '1.0.11'
 }
 
 export default ApiConfig;

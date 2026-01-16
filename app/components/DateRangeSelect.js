@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, TouchableOpacity, Modal, Platform, ScrollView, Alert } from 'react-native';
+import React, { useState, useEffect } from "react";
+import { View, TouchableOpacity, Modal, Platform } from 'react-native';
 import { Text } from 'app/components';
 ;
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -9,132 +9,140 @@ import tw from "twrnc";
 
 function DateRangeSelect(props) {
 	const { dateRange, onSetRange } = props;
-	const [showModal, setShowModal] = useState(false);
-	const [showStartDatePicker, setShowStartDatePicker] = useState(false);
-	const [showEndDatePicker, setShowEndDatePicker] = useState(false);
-	const [tempStartDate, setTempStartDate] = useState(dateRange[0] || moment());
-	const [tempEndDate, setTempEndDate] = useState(dateRange[1] || moment());
-	const [isValidRange, setIsValidRange] = useState(true);
+	const [showDatePicker, setShowDatePicker] = useState(false);
+	const [pickingStartDate, setPickingStartDate] = useState(true);
+	const [tempStartDate, setTempStartDate] = useState(dateRange?.[0] || moment());
+	const [tempEndDate, setTempEndDate] = useState(dateRange?.[1] || moment());
+	const [pickerKey, setPickerKey] = useState(0); // Key to force re-render DateTimePicker on Android
 
-	// Get current selected label
+	// Update temp dates when dateRange prop changes
+	useEffect(() => {
+		if (dateRange && dateRange[0] && dateRange[1]) {
+			setTempStartDate(moment(dateRange[0]));
+			setTempEndDate(moment(dateRange[1]));
+		}
+	}, [dateRange]);
+
+	// Auto-open end date picker on Android after selecting start date
+	useEffect(() => {
+		if (Platform.OS === 'android' && showDatePicker && !pickingStartDate) {
+			// Small delay to ensure the previous picker is closed before opening the new one
+			const timer = setTimeout(() => {
+				setPickerKey(prev => prev + 1);
+			}, 100);
+			return () => clearTimeout(timer);
+		}
+	}, [pickingStartDate, showDatePicker]);
+
+	// Get current selected label - Always show date range format
 	const getCurrentLabel = () => {
-		if (!dateRange || !dateRange[0] || !dateRange[1]) return 'Tháng này';
+		if (!dateRange || !dateRange[0] || !dateRange[1]) {
+			// Default to current month range
+			const start = moment().startOf('month');
+			const end = moment().endOf('month');
+			return `${start.format('DD/MM/YYYY')} - ${end.format('DD/MM/YYYY')}`;
+		}
 
 		const start = moment(dateRange[0]);
 		const end = moment(dateRange[1]);
-
-		// Check for exact matches with predefined ranges
-		const today = moment();
-		const yesterday = moment().subtract(1, 'days');
-		const thisWeekStart = moment().startOf('week');
-		const thisWeekEnd = moment().endOf('week');
-		const lastWeekStart = moment().startOf('week').subtract(7, 'days');
-		const lastWeekEnd = moment().endOf('week').subtract(7, 'days');
-		const thisMonthStart = moment().startOf('month');
-		const thisMonthEnd = moment().endOf('month');
-		const lastMonthStart = moment().subtract(1, 'months').startOf('month');
-		const lastMonthEnd = moment().subtract(1, 'months').endOf('month');
-		const thisYearStart = moment().startOf('year');
-		const thisYearEnd = moment().endOf('year');
-		const lastYearStart = moment().subtract(1, 'years').startOf('year');
-		const lastYearEnd = moment().subtract(1, 'years').endOf('year');
-
-		if (start.isSame(today, 'day') && end.isSame(today, 'day')) return 'Hôm nay';
-		if (start.isSame(yesterday, 'day') && end.isSame(yesterday, 'day')) return 'Hôm qua';
-		if (start.isSame(thisWeekStart, 'day') && end.isSame(thisWeekEnd, 'day')) return 'Tuần này';
-		if (start.isSame(lastWeekStart, 'day') && end.isSame(lastWeekEnd, 'day')) return 'Tuần trước';
-		if (start.isSame(thisMonthStart, 'day') && end.isSame(thisMonthEnd, 'day')) return 'Tháng này';
-		if (start.isSame(lastMonthStart, 'day') && end.isSame(lastMonthEnd, 'day')) return 'Tháng trước';
-		if (start.isSame(thisYearStart, 'day') && end.isSame(thisYearEnd, 'day')) return 'Năm nay';
-		if (start.isSame(lastYearStart, 'day') && end.isSame(lastYearEnd, 'day')) return 'Năm trước';
-
-		// Custom range
 		return `${start.format('DD/MM/YYYY')} - ${end.format('DD/MM/YYYY')}`;
 	};
 
-	const handleQuickSelect = (value) => {
-		if (value && onSetRange) {
-			onSetRange(value);
-			setShowModal(false);
-		}
+	const handleButtonPress = () => {
+		setTempStartDate(dateRange?.[0] || moment().startOf('month'));
+		setTempEndDate(dateRange?.[1] || moment().endOf('month'));
+		setPickingStartDate(true);
+		setShowDatePicker(true);
 	};
 
-	const handleCustomDateSelect = () => {
-		setTempStartDate(dateRange[0] || moment());
-		setTempEndDate(dateRange[1] || moment());
-		setShowModal(true);
-		setShowStartDatePicker(false);
-		setShowEndDatePicker(false);
-	};
-
-	const handleStartDateChange = (event, selectedDate) => {
-		if (selectedDate) {
-			const newStartDate = moment(selectedDate);
-			setTempStartDate(newStartDate);
-
-			// If new start date is after current end date, update end date to be same as start date
-			if (newStartDate.isAfter(tempEndDate)) {
-				setTempEndDate(newStartDate);
+	const handleDateChange = (event, selectedDate) => {
+		if (Platform.OS === 'android') {
+			if (event.type === 'set' && selectedDate) {
+				const selectedMoment = moment(selectedDate);
+				if (pickingStartDate) {
+					setTempStartDate(selectedMoment);
+					// Set end date to start date + 1 month
+					const newEndDate = moment(selectedMoment).add(1, 'month');
+					setTempEndDate(newEndDate);
+					// Automatically switch to picking end date and force re-render picker
+					setPickingStartDate(false);
+					// Force DateTimePicker to re-render by changing key
+					setPickerKey(prev => prev + 1);
+				} else {
+					// Validate end date
+					if (selectedMoment.isBefore(tempStartDate)) {
+						// End date before start date, swap them
+						setTempStartDate(selectedMoment);
+						setTempEndDate(tempStartDate);
+					} else {
+						setTempEndDate(selectedMoment);
+					}
+					// Apply the range
+					applyDateRange();
+					setShowDatePicker(false);
+				}
+			} else {
+				// User cancelled, close picker
+				if (!pickingStartDate) {
+					// If cancelling end date selection, close modal
+					setShowDatePicker(false);
+				} else {
+					// If cancelling start date selection, close modal
+					setShowDatePicker(false);
+				}
 			}
-
-			// Update validation status
-			setIsValidRange(newStartDate.isSameOrBefore(tempEndDate));
-		}
-	};
-
-	const handleEndDateChange = (event, selectedDate) => {
-		if (selectedDate) {
-			const newEndDate = moment(selectedDate);
-
-			// If new end date is before current start date, show alert and don't update
-			if (newEndDate.isBefore(tempStartDate)) {
-				Alert.alert(
-					"Ngày không hợp lệ",
-					"Ngày kết thúc không thể trước ngày bắt đầu. Vui lòng chọn ngày khác.",
-					[{ text: "OK" }]
-				);
-				setIsValidRange(false);
-				return;
+		} else {
+			// iOS
+			if (selectedDate) {
+				const selectedMoment = moment(selectedDate);
+				if (pickingStartDate) {
+					setTempStartDate(selectedMoment);
+					// Set end date to start date + 1 month
+					const newEndDate = moment(selectedMoment).add(1, 'month');
+					setTempEndDate(newEndDate);
+					// Automatically switch to picking end date
+					setPickingStartDate(false);
+				} else {
+					if (selectedMoment.isBefore(tempStartDate)) {
+						setTempStartDate(selectedMoment);
+						setTempEndDate(tempStartDate);
+					} else {
+						setTempEndDate(selectedMoment);
+					}
+				}
 			}
-
-			setTempEndDate(newEndDate);
-			setIsValidRange(true);
 		}
 	};
 
-	const applyCustomDateRange = () => {
+	const applyDateRange = () => {
 		if (tempStartDate && tempEndDate && onSetRange) {
-			// Ensure start date is not after end date
 			const start = moment(tempStartDate).startOf('day');
 			const end = moment(tempEndDate).endOf('day');
-
-			if (start.isAfter(end)) {
-				// Swap dates if start is after end
-				onSetRange([end, start]);
-			} else {
-				onSetRange([start, end]);
-			}
+			onSetRange([start, end]);
 		}
 	};
 
-	const items = [
-		{ label: 'Hôm qua', value: [moment().subtract(1, 'days'), moment().subtract(1, 'days')] },
-		{ label: 'Hôm nay', value: [moment(), moment()] },
-		{ label: 'Tuần trước', value: [moment().startOf('week').subtract(7,'days'), moment().endOf('week').subtract(7, 'days')] },
-		{ label: 'Tuần này', value: [moment().startOf('week'), moment().endOf('week')] },
-		{ label: 'Tháng trước', value: [moment().subtract(1,'months').startOf('month'), moment().subtract(1,'months').endOf('month')] },
-		{ label: 'Tháng này', value: [moment().startOf('month'), moment().endOf('month')]},
-		{ label: 'Năm trước', value: [moment().subtract(1,'years').startOf('year'), moment().subtract(1,'years').endOf('year')]},
-		{ label: 'Năm nay', value: [moment().startOf('year'), moment().endOf('year')]},
-		{ label: 'Chọn ngày cụ thể...', value: 'custom' },
-	];
+	const handleStartDatePress = () => {
+		setPickingStartDate(true);
+	};
+
+	const handleEndDatePress = () => {
+		setPickingStartDate(false);
+	};
+
+	const handleConfirm = () => {
+		applyDateRange();
+		setShowDatePicker(false);
+	};
+
+	const currentDate = pickingStartDate ? tempStartDate.toDate() : tempEndDate.toDate();
 
 	return (
 		<View>
 			{/* Date Range Display Button */}
 			<TouchableOpacity
 				style={tw`border border-gray-100 rounded p-2 flex-row items-center justify-between`}
-				onPress={handleCustomDateSelect}
+				onPress={handleButtonPress}
 			>
 				<Text style={tw`text-gray-700 text-sm`}>
 					{getCurrentLabel()}
@@ -142,143 +150,91 @@ function DateRangeSelect(props) {
 				<Icon name="calendar-range" size={20} style={tw`text-gray-500`} />
 			</TouchableOpacity>
 
-			{/* Date Range Selection Modal */}
+			{/* Simple Date Picker BottomSheet */}
 			<Modal
-				visible={showModal}
+				visible={showDatePicker}
 				transparent={true}
 				animationType="slide"
+				onRequestClose={() => setShowDatePicker(false)}
 			>
-				<View style={tw`flex-1 bg-black bg-opacity-50 justify-center items-center`}>
-					<View style={tw`bg-white rounded-lg p-4 m-4 w-11/12 max-h-[500px]`}>
-						<Text style={tw`text-lg font-semibold mb-4 text-center`}>
-							Chọn khoảng thời gian
-						</Text>
+				<TouchableOpacity
+					style={tw`flex-1 bg-black bg-opacity-50`}
+					activeOpacity={1}
+					onPress={() => setShowDatePicker(false)}
+				>
+					<View style={tw`flex-1 justify-end`}>
+						<View style={tw`bg-white rounded-t-3xl`}>
+							{/* Handle bar */}
+							<View style={tw`w-12 h-1 bg-gray-300 rounded-full self-center mt-2 mb-4`} />
+							
+							<View style={tw`px-4 pb-6`}>
+								<Text style={tw`text-lg font-semibold mb-4 text-center`}>
+									Chọn khoảng thời gian
+								</Text>
 
-						<ScrollView showsVerticalScrollIndicator={false}>
-							{/* Quick Select Options */}
-							<View style={tw`mb-4`}>
-								<Text style={tw`text-sm font-medium text-gray-600 mb-2`}>Chọn nhanh:</Text>
-								<View style={tw`flex-row flex-wrap`}>
-									{items.slice(0, -1).map((item, index) => (
-										<TouchableOpacity
-											key={index}
-											style={tw`bg-gray-100 px-3 py-2 rounded-md mr-2 mb-2`}
-											onPress={() => handleQuickSelect(item.value)}
-										>
-											<Text style={tw`text-sm text-gray-700`}>{item.label}</Text>
-										</TouchableOpacity>
-									))}
-								</View>
-							</View>
-
-							<View style={tw`border-t border-gray-200 my-3`} />
-
-							{/* Custom Date Range Selection */}
-							<View style={tw`mb-4`}>
-								<Text style={tw`text-sm font-medium text-gray-600 mb-3`}>Chọn ngày cụ thể:</Text>
-
-								{/* Date Range Row */}
-								<View style={tw`flex-row justify-between`}>
-									{/* Start Date */}
-									<View style={tw`flex-1 mr-2`}>
-										<Text style={tw`text-xs text-gray-500 mb-1`}>Từ ngày:</Text>
-										<TouchableOpacity
-											style={tw`bg-gray-50 border border-gray-300 rounded-md p-3 flex-row items-center justify-between`}
-											onPress={() => setShowStartDatePicker(true)}
-										>
-											<Text style={tw`text-sm text-gray-900`}>
-												{tempStartDate.format('DD/MM/YYYY')}
-											</Text>
-											<Icon name="calendar" size={16} style={tw`text-gray-400`} />
-										</TouchableOpacity>
-									</View>
-
-									{/* End Date */}
-									<View style={tw`flex-1 ml-2`}>
-										<Text style={tw`text-xs text-gray-500 mb-1`}>Đến ngày:</Text>
-										<TouchableOpacity
-											style={tw`bg-gray-50 border border-gray-300 rounded-md p-3 flex-row items-center justify-between`}
-											onPress={() => setShowEndDatePicker(true)}
-										>
-											<Text style={tw`text-sm text-gray-900`}>
-												{tempEndDate.format('DD/MM/YYYY')}
-											</Text>
-											<Icon name="calendar" size={16} style={tw`text-gray-400`} />
-										</TouchableOpacity>
-									</View>
-								</View>
-
-								{/* Validation Message */}
-								{!isValidRange && (
-									<View style={tw`mt-2 p-2 bg-red-50 border border-red-200 rounded`}>
-										<Text style={tw`text-xs text-red-600 text-center`}>
-											Ngày kết thúc không thể trước ngày bắt đầu
+								{/* Date Selection Buttons */}
+								<View style={tw`flex-row justify-between mb-4`}>
+									<TouchableOpacity
+										style={tw`flex-1 mr-2 bg-gray-50 border-2 ${pickingStartDate ? 'border-blue-500' : 'border-gray-300'} rounded-md p-3`}
+										onPress={handleStartDatePress}
+									>
+										<Text style={tw`text-xs text-gray-500 mb-1`}>Từ ngày</Text>
+										<Text style={tw`text-sm font-medium text-gray-900`}>
+											{tempStartDate.format('DD/MM/YYYY')}
 										</Text>
+									</TouchableOpacity>
+
+									<TouchableOpacity
+										style={tw`flex-1 ml-2 bg-gray-50 border-2 ${!pickingStartDate ? 'border-blue-500' : 'border-gray-300'} rounded-md p-3`}
+										onPress={handleEndDatePress}
+									>
+										<Text style={tw`text-xs text-gray-500 mb-1`}>Đến ngày</Text>
+										<Text style={tw`text-sm font-medium text-gray-900`}>
+											{tempEndDate.format('DD/MM/YYYY')}
+										</Text>
+									</TouchableOpacity>
+								</View>
+
+								{/* Date Picker */}
+								{Platform.OS === 'android' ? (
+									<View key={pickerKey}>
+										<DateTimePicker
+											value={currentDate}
+											mode="date"
+											display="default"
+											onChange={handleDateChange}
+										/>
 									</View>
+								) : (
+									<>
+										<DateTimePicker
+											value={currentDate}
+											mode="date"
+											display="spinner"
+											onChange={handleDateChange}
+											style={tw`bg-white`}
+										/>
+										<View style={tw`flex-row justify-between mt-4`}>
+											<TouchableOpacity
+												style={tw`bg-gray-300 px-6 py-2 rounded`}
+												onPress={() => setShowDatePicker(false)}
+											>
+												<Text style={tw`text-gray-700 font-medium`}>Hủy</Text>
+											</TouchableOpacity>
+											<TouchableOpacity
+												style={tw`bg-blue-500 px-6 py-2 rounded`}
+												onPress={handleConfirm}
+											>
+												<Text style={tw`text-white font-medium`}>Xong</Text>
+											</TouchableOpacity>
+										</View>
+									</>
 								)}
 							</View>
-						</ScrollView>
-
-						{/* Action Buttons - Fixed at bottom */}
-						<View style={tw`flex-row justify-between mt-4 pt-3 border-t border-gray-200`}>
-							<TouchableOpacity
-								style={tw`bg-gray-300 px-4 py-2 rounded`}
-								onPress={() => {
-									setShowModal(false);
-									setShowStartDatePicker(false);
-									setShowEndDatePicker(false);
-								}}
-							>
-								<Text style={tw`text-gray-700`}>Hủy</Text>
-							</TouchableOpacity>
-
-							<TouchableOpacity
-								style={tw`px-4 py-2 rounded ${isValidRange ? 'bg-blue-500' : 'bg-gray-300'}`}
-								onPress={() => {
-									if (isValidRange) {
-										applyCustomDateRange();
-										setShowModal(false);
-										setShowStartDatePicker(false);
-										setShowEndDatePicker(false);
-									}
-								}}
-								disabled={!isValidRange}
-							>
-								<Text style={tw`${isValidRange ? 'text-white' : 'text-gray-500'}`}>Áp dụng</Text>
-							</TouchableOpacity>
 						</View>
 					</View>
-				</View>
+				</TouchableOpacity>
 			</Modal>
-
-			{/* Native Date Pickers */}
-			{showStartDatePicker && (
-				<DateTimePicker
-					value={tempStartDate.toDate()}
-					mode="date"
-					display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-					onChange={(event, selectedDate) => {
-						setShowStartDatePicker(false);
-						if (selectedDate) {
-							handleStartDateChange(event, selectedDate);
-						}
-					}}
-				/>
-			)}
-
-			{showEndDatePicker && (
-				<DateTimePicker
-					value={tempEndDate.toDate()}
-					mode="date"
-					display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-					onChange={(event, selectedDate) => {
-						setShowEndDatePicker(false);
-						if (selectedDate) {
-							handleEndDateChange(event, selectedDate);
-						}
-					}}
-				/>
-			)}
 		</View>
 	);
 }
