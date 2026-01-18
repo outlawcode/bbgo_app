@@ -264,7 +264,8 @@ function AffiliateProgramScreen(props) {
 									</View>
 								</View>
 								{/* Date Range Selector */}
-								<View style={tw`my-3`}>
+								<View style={tw`bg-white rounded-xl px-4 py-3 mb-3`}>
+									<Text style={tw`text-gray-700 mb-2`}>Khoảng thời gian:</Text>
 									<DateRangeSelect
 										dateRange={dateRange}
 										onSetRange={setDateRange}
